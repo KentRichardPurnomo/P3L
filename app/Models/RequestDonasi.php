@@ -7,5 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class RequestDonasi extends Model
 {
+    protected $fillable = ['organisasi_id','jenis_barang', 'alasan'];
     use HasFactory;
+
+    public function organisasi()
+    {
+        return $this->belongsTo(Organisasi::class);
+    }
 }
