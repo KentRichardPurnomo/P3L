@@ -27,15 +27,57 @@
 
 <!-- Ikon layanan -->
 <div class="grid grid-cols-4 md:grid-cols-8 gap-4 px-6 py-4 bg-white text-center">
-    <div><img src="{{ asset('images/ico1.png') }}" class="mx-auto h-12"><p class="text-xs mt-2">Baru Masuk</p></div>
-    <div><img src="{{ asset('images/ico2.png') }}" class="mx-auto h-12"><p class="text-xs mt-2">Elektronik</p></div>
-    <div><img src="{{ asset('images/ico3.png') }}" class="mx-auto h-12"><p class="text-xs mt-2">Hobi & Game</p></div>
-    <div><img src="{{ asset('images/ico4.png') }}" class="mx-auto h-12"><p class="text-xs mt-2">Fashion</p></div>
-    <div><img src="{{ asset('images/ico5.png') }}" class="mx-auto h-12"><p class="text-xs mt-2">Perkakas</p></div>
-    <div><img src="{{ asset('images/ico6.png') }}" class="mx-auto h-12"><p class="text-xs mt-2">Olahraga</p></div>
-    <div><img src="{{ asset('images/ico7.png') }}" class="mx-auto h-12"><p class="text-xs mt-2">Perabotan Rumah</p></div>
-    <div><img src="{{ asset('images/ico8.png') }}" class="mx-auto h-12"><p class="text-xs mt-2">Dekorasi</p></div>
+    <a href="{{ route('kategori.baru') }}">
+    <div>
+        <img src="{{ asset('images/ico1.png') }}" class="mx-auto h-12">
+        <p class="text-xs mt-2">Baru Masuk</p>
+    </div>
+</a>
+
+    <a href="{{ route('kategori.show', ['id' => 1]) }}">
+        <div>
+            <img src="{{ asset('images/ico2.png') }}" class="mx-auto h-12">
+            <p class="text-xs mt-2">Elektronik</p>
+        </div>
+    </a>
+    <a href="{{ route('kategori.show', ['id' => 11]) }}">
+        <div>
+            <img src="{{ asset('images/ico3.png') }}" class="mx-auto h-12">
+            <p class="text-xs mt-2">Hobi & Game</p>
+        </div>
+    </a>
+    <a href="{{ route('kategori.show', ['id' => 2]) }}">
+        <div>
+            <img src="{{ asset('images/ico4.png') }}" class="mx-auto h-12">
+            <p class="text-xs mt-2">Fashion</p>
+        </div>
+    </a>
+    <a href="{{ route('kategori.show', ['id' => 12]) }}">
+        <div>
+            <img src="{{ asset('images/ico5.png') }}" class="mx-auto h-12">
+            <p class="text-xs mt-2">Perkakas</p>
+        </div>
+    </a>
+    <a href="{{ route('kategori.show', ['id' => 6]) }}">
+        <div>
+            <img src="{{ asset('images/ico6.png') }}" class="mx-auto h-12">
+            <p class="text-xs mt-2">Olahraga</p>
+        </div>
+    </a>
+    <a href="{{ route('kategori.show', ['id' => 3]) }}">
+        <div>
+            <img src="{{ asset('images/ico7.png') }}" class="mx-auto h-12">
+            <p class="text-xs mt-2">Perabotan Rumah</p>
+        </div>
+    </a>
+    <a href="{{ route('kategori.show', ['id' => 8]) }}">
+        <div>
+            <img src="{{ asset('images/ico8.png') }}" class="mx-auto h-12">
+            <p class="text-xs mt-2">Dekorasi</p>
+        </div>
+    </a>
 </div>
+
 
 <!-- Kategori utama -->
 <section class="p-8 bg-white mt-4">

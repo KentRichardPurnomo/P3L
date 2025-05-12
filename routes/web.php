@@ -99,6 +99,7 @@ Route::post('/logout-penitip', [PenitipAuthController::class, 'logout'])->name('
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
+Route::get('/kategori/baru-masuk', [KategoriController::class, 'baruMasuk'])->name('kategori.baru');
 Route::get('/kategori/{id}', [KategoriController::class, 'show'])->name('kategori.show');
 Route::get('/barang/{id}', [BarangController::class, 'show'])->name('barang.show');
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
@@ -110,8 +111,6 @@ Route::post('/login-pembeli', [PembeliAuthController::class, 'login'])->name('pe
 Route::post('/lupa-password-pembeli', [PembeliAuthController::class, 'lupaPassword'])->name('pembeli.lupa.password');
 Route::get('/reset-password-pembeli', [PembeliAuthController::class, 'resetPasswordForm'])->name('pembeli.reset.form');
 Route::post('/reset-password-pembeli', [PembeliAuthController::class, 'resetPassword'])->name('pembeli.reset');
-
-
 
 Route::get('/register-pembeli', [PembeliAuthController::class, 'registerForm'])->name('pembeli.register.form');
 Route::post('/register-pembeli', [PembeliAuthController::class, 'register'])->name('pembeli.register');
