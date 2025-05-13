@@ -39,6 +39,11 @@ class Pembeli extends Authenticatable
 
     public function transaksis()
     {
-        return $this->hasMany(Transaksi::class);
+        return $this->hasMany(\App\Models\Transaksi::class);
+    }
+
+    public function diskusis()
+    {
+        return $this->hasMany(Diskusi::class, 'user_id');
     }
 }

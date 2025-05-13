@@ -11,6 +11,7 @@
             <h2 class="text-xl font-bold">Username : {{ $penitip->username }}</h2>
             <p><i class="fas fa-envelope mr-1"></i>Email✉️ : {{ $penitip->email }}</p>
             <p><i class="fas fa-phone mr-1"></i>No Telp☎️ : {{ $penitip->no_telp }}</p>
+            <p class="text-lg">Saldo: Rp{{ number_format($penitip->saldo, 0, ',', '.') }}</p>
         </div>
     </div>
 
@@ -49,7 +50,7 @@
         @else
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                 @foreach($barangTerjual as $barang)
-                    <a href="{{ route('barang.show', $barang->id) }}" class="border rounded p-3 hover:shadow transition">
+                    <a href="{{ route('penitip.barang.riwayat', $barang->id) }}" class="border rounded p-3 hover:shadow transition">
                         <img src="{{ asset('images/barang/' . $barang->id . '/' . $barang->thumbnail) }}"
                              class="w-full h-32 object-cover rounded mb-2">
                         <h4 class="font-semibold text-sm">{{ $barang->nama }}</h4>

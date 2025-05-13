@@ -21,6 +21,6 @@ class DiskusiController extends Controller
             'isi' => $request->isi
         ]);
 
-        return redirect()->back()->with('success', 'Diskusi berhasil dikirim.');
+        return back()->with('success', 'Pertanyaan berhasil dikirim.');
     }
 }

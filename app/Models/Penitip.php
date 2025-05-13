@@ -15,9 +15,17 @@ class Penitip extends Authenticatable
         'username',
         'email',
         'no_telp',
+        'no_ktp',
+        'foto_ktp',
         'password',
         'profile_picture',
         'plaintext_password',
+        'poin',
+        'saldo',
+    ];
+
+    protected $casts = [
+        'saldo' => 'decimal:2',
     ];
 
     protected $hidden = [
@@ -27,6 +35,6 @@ class Penitip extends Authenticatable
 
     public function barangs()
     {
-        return $this->hasMany(\App\Models\Barang::class);
+        return $this->hasMany(Barang::class);
     }
 }

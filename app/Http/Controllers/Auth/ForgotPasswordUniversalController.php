@@ -10,6 +10,9 @@ use App\Models\Organisasi;
 use App\Models\Pegawai;
 use App\Models\Owner;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class ForgotPasswordUniversalController extends Controller
 {
@@ -18,44 +21,54 @@ class ForgotPasswordUniversalController extends Controller
         return view('auth.forgotPassword');
     }
 
-    public function sendResetLink(Request $request)
+        public function sendResetLink(Request $request)
     {
-            $request->validate([
+        $request->validate([
             'email' => 'required|email'
         ]);
 
         $email = $request->email;
 
-        // Cek urutan entitas
         $user = Pembeli::where('email', $email)->first()
             ?? Penitip::where('email', $email)->first()
             ?? Organisasi::where('email', $email)->first();
 
-        // ✅ Khusus Pegawai
         $pegawai = Pegawai::where('email', $email)->first();
         if ($pegawai) {
-            // Reset password jadi tanggal lahir
-            $tanggal_lahir = $pegawai->tanggal_lahir; // format: YYYY-MM-DD
+            $tanggal_lahir = $pegawai->tanggal_lahir;
             $pegawai->password = Hash::make($tanggal_lahir);
             $pegawai->save();
 
-            return redirect()->route('login.universal')->with('success', 'Password pegawai berhasil direset. Silakan login kembali menggunakan tanggal lahir Anda. Format = DD-MM-YYYY');
+            return redirect()->route('login.universal')
+                ->with('success', 'Password pegawai berhasil direset. Gunakan tanggal lahir Anda (format DD-MM-YYYY) untuk login.');
         }
 
-         // ✅ Owner
         $owner = Owner::where('email', $email)->first();
         if ($owner) {
             $tanggal_lahir = $owner->tanggal_lahir;
             $owner->password = Hash::make($tanggal_lahir);
             $owner->save();
 
-            return redirect()->route('login.universal')->with('success', 'Password berhasil direset. Silakan login kembali menggunakan tanggal lahir Anda. Format = DD-MM-YYYY');
+            return redirect()->route('login.universal')
+                ->with('success', 'Password berhasil direset. Gunakan tanggal lahir Anda (format DD-MM-YYYY) untuk login.');
         }
 
         if ($user) {
-            // Simulasi reset (misalnya ke form reset manual)
-            return redirect()->route('password.reset.form', ['email' => $email])
-                ->with('success', 'Link reset password telah dikirim ke email Anda (simulasi).');
+            // 🔐 Buat signed reset URL
+            $url = URL::temporarySignedRoute(
+                'password.reset.form',
+                Carbon::now()->addMinutes(30),
+                ['email' => $email]
+            );
+
+            // Kirim email via Mailtrap
+            Mail::raw("Halo,\n\nKlik link berikut untuk mereset password Anda:\n$url\n\nLink ini berlaku selama 30 menit.",
+                function ($message) use ($email) {
+                    $message->to($email)
+                        ->subject('Reset Password Akun ReUseMart');
+                });
+
+            return back()->with('success', 'Link reset password telah dikirim ke email Anda.');
         }
 
         return back()->withErrors(['email' => 'Email tidak ditemukan di sistem kami.']);

@@ -49,6 +49,13 @@ class UniversalLoginController extends Controller
             return redirect()->route('organisasi.dashboard')->with('success', 'Berhasil login sebagai organisasi');
         }
 
+        // Cek Owner
+        $owner = \App\Models\Owner::where('username', $username)->first();
+        if ($owner && Hash::check($password, $owner->password)) {
+            Auth::guard('owner')->login($owner);
+            return redirect()->route('owner.dashboard')->with('success', 'Berhasil login sebagai owner');
+        }
+
         // ✅ Cek Pegawai
         $pegawai = Pegawai::where('username', $username)->first();
         if ($pegawai && Hash::check($password, $pegawai->password)) {
@@ -61,8 +68,6 @@ class UniversalLoginController extends Controller
             switch ($jabatan) {
                 case 'admin':
                     return redirect()->route('admin.dashboard')->with('success', 'Berhasil login sebagai admin');
-                case 'owner':
-                    return redirect()->route('owner.dashboard')->with('success', 'Berhasil login sebagai owner');
                 case 'cs':
                     return redirect()->route('cs.dashboard')->with('success', 'Berhasil login sebagai CS');
                 case 'pegawai gudang':

@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Penitip;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Barang;
+use App\Models\Pembeli;
+use App\Models\Transaksi;
+use App\Models\DetailTransaksi;
 
 class BarangController extends Controller
 {
@@ -46,5 +50,25 @@ class BarangController extends Controller
         }
 
         return view('penitip.barang-show', compact('barang'));
+    }
+
+    public function riwayat($id)
+    {
+        $barang = Barang::findOrFail($id);
+
+        // Ambil transaksi terakhir berdasarkan relasi yang benar
+        $detail = $barang->detailTransaksis()->latest()->first();
+
+        $pembeli = null;
+        $poinPembeli = 0;
+
+        if ($detail && $detail->transaksi && $detail->transaksi->pembeli) {
+            $pembeli = $detail->transaksi->pembeli;
+            $poinPembeli = $pembeli->poin;
+        }
+
+        $komisi = $barang->harga * 0.1;
+
+        return view('penitip.penitip_riwayat', compact('barang', 'pembeli', 'poinPembeli', 'komisi'));
     }
 }

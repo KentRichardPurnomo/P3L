@@ -6,6 +6,8 @@
     $pembeli = Auth::guard('pembeli')->user();
 @endphp
 
+
+
 @section('content')
 <div class="p-6">
     <div class="flex flex-col md:flex-row gap-6">
@@ -56,11 +58,24 @@
 
         <!-- CARD AKSI -->
         <div class="md:w-1/4">
+                @if(session('success'))
+                    <div class="mb-4 bg-green-100 text-green-800 p-2 rounded">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="mb-4 bg-red-100 text-red-800 p-2 rounded">
+                        {{ session('error') }}
+                    </div>
+                @endif
             <div class="bg-white p-4 rounded shadow space-y-3 sticky top-24">
                 <h1 class="text-2xl font-bold mb-2">{{ $barang->nama }}</h1>
             <p class="text-xl text-orange-600 font-semibold mb-4">Rp {{ number_format($barang->harga, 0, ',', '.') }}</p>
                 @if ($pembeli)
-                    <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">+ Keranjang</button>
+                    <form method="POST" action="{{ route('keranjang.tambah', $barang->id) }}">
+                        @csrf
+                        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">+ Keranjang</button>
+                    </form>
                     <button class="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600">Beli Sekarang</button>
                 @else
                     <button onclick="showLoginPrompt()"
@@ -80,45 +95,36 @@
     </div>
 
     <!-- DISKUSI -->
-    <div id="diskusi" class="mt-12 bg-white p-6 rounded shadow">
-        <h2 class="text-xl font-bold mb-4">Diskusi & Pertanyaan</h2>
+    <div class="mt-10 bg-white p-6 rounded shadow">
+        <h3 class="text-xl font-bold mb-4">Diskusi Produk</h3>
 
-        @if ($pembeli && !$userDiskusi)
-            <div class="flex items-center justify-between mb-4 bg-yellow-100 text-yellow-800 p-4 rounded">
-                <p>Punya pertanyaan? Langsung diskusi dengan penjual saja</p>
-                <button onclick="scrollAndFocusTextarea()"
-                        class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
-                    Mulai Diskusi
-                </button>
-            </div>
-        @elseif (!$pembeli)
-            <div class="flex items-center justify-between mb-4 bg-yellow-100 text-yellow-800 p-4 rounded">
-                <p>Punya pertanyaan? Langsung diskusi dengan penjual saja</p>
-                <button onclick="showLoginPrompt()"
-                        class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
-                    Mulai Diskusi
-                </button>
-            </div>
-        @endif
+        @forelse($barang->diskusis as $diskusi)
+            <div class="border-t pt-4 mt-4">
+                <p><strong>{{ $diskusi->user->username }}</strong> <span class="text-sm text-gray-500">({{ $diskusi->created_at->diffForHumans() }})</span></p>
+                <p class="mb-2 text-gray-700">{{ $diskusi->isi }}</p>
 
-        @if ($pembeli)
-        <form id="diskusiForm" action="{{ route('diskusi.store') }}" method="POST" class="mb-4">
-            @csrf
-            <input type="hidden" name="barang_id" value="{{ $barang->id }}">
-            <textarea name="isi" rows="3" class="w-full border rounded p-2"
-                      placeholder="Tulis pertanyaan atau komentar..."></textarea>
-            <button type="submit" class="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Kirim</button>
-        </form>
-        @endif
-
-        @foreach($barang->diskusis as $diskusi)
-            <div class="border-t py-2">
-                <strong>{{ $diskusi->user->name }}</strong>
-                <span class="text-sm text-gray-500">{{ $diskusi->created_at->diffForHumans() }}</span>
-                <p class="text-sm">{{ $diskusi->isi }}</p>
+                @if($diskusi->balasan)
+                    <div class="ml-4 p-3 bg-green-50 border-l-4 border-green-400 rounded text-sm">
+                        <strong class="text-green-800">Balasan Anda:</strong>
+                        <p class="text-gray-800">{{ $diskusi->balasan }}</p>
+                    </div>
+                @else
+                    <form action="{{ route('penitip.diskusi.balas', $diskusi->id) }}" method="POST" class="mt-3">
+                        @csrf
+                        <textarea name="balasan" rows="2" placeholder="Tulis balasan Anda..."
+                                class="w-full border rounded p-2 text-sm" required></textarea>
+                        <button type="submit"
+                                class="mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm">
+                            Balas
+                        </button>
+                    </form>
+                @endif
             </div>
-        @endforeach
+        @empty
+            <p class="text-gray-500 italic">Belum ada pertanyaan dari pembeli.</p>
+        @endforelse
     </div>
+
 
     <!-- REKOMENDASI -->
     <div class="mt-12">
