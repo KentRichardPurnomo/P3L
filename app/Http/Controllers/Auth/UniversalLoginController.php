@@ -53,10 +53,25 @@ class UniversalLoginController extends Controller
         $pegawai = Pegawai::where('username', $username)->first();
         if ($pegawai && Hash::check($password, $pegawai->password)) {
             Auth::guard('pegawai')->login($pegawai);
-            return redirect()->route('pegawai.dashboard')->with('success', 'Berhasil login sebagai pegawai');
-        }
 
-        // ❌ Jika tidak ditemukan di manapun
-        return back()->withErrors(['username' => 'Username atau password salah']);
+            // Ambil nama jabatan
+            $jabatan = strtolower($pegawai->jabatan->nama_jabatan); // misal: 'admin', 'owner'
+
+            // Arahkan ke dashboard berdasarkan jabatan
+            switch ($jabatan) {
+                case 'admin':
+                    return redirect()->route('admin.dashboard')->with('success', 'Berhasil login sebagai admin');
+                case 'owner':
+                    return redirect()->route('owner.dashboard')->with('success', 'Berhasil login sebagai owner');
+                case 'cs':
+                    return redirect()->route('cs.dashboard')->with('success', 'Berhasil login sebagai CS');
+                case 'pegawai gudang':
+                    return redirect()->route('gudang.dashboard')->with('success', 'Berhasil login sebagai pegawai gudang');
+                case 'kurir':
+                    return redirect()->route('kurir.dashboard')->with('success', 'Berhasil login sebagai kurir');
+                default:
+                    return redirect('/')->with('success', 'Berhasil login sebagai pegawai');
+            }
+        }
     }
 }

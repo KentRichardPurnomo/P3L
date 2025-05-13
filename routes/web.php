@@ -24,12 +24,69 @@ use App\Http\Controllers\Auth\ForgotPasswordUniversalController;
 use App\Http\Controllers\Auth\ResetPasswordUniversalController;
 use App\Http\Controllers\Auth\LoginUniversalController;
 use App\Http\Controllers\Pegawai\PegawaiController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\AdminJabatanController;
+use App\Http\Controllers\Admin\AdminOrganisasiController;
 
 Route::get('/login', [LoginUniversalController::class, 'showLoginForm'])->name('login.universal');
 Route::post('/login', [LoginUniversalController::class, 'login'])->name('login.universal.submit');
 
 // Dashboard pegawai (blank sementara)
 Route::get('/pegawai/dashboard', [PegawaiController::class, 'dashboard'])->name('pegawai.dashboard')->middleware('auth:pegawai');
+
+
+//admin
+Route::prefix('admin')->middleware(['auth:pegawai', 'admin.only'])->group(function () {
+    Route::get('/organisasi', [AdminOrganisasiController::class, 'index'])->name('admin.organisasi.index');
+    Route::get('/organisasi/{username}/edit', [AdminOrganisasiController::class, 'edit'])->name('admin.organisasi.edit');
+    Route::put('/organisasi/{username}', [AdminOrganisasiController::class, 'update'])->name('admin.organisasi.update');
+});
+
+Route::delete('/organisasi/{id}', [AdminOrganisasiController::class, 'destroy'])->name('admin.organisasi.destroy');
+
+Route::get('/jabatan', [AdminJabatanController::class, 'index'])->name('admin.jabatan.index');
+Route::get('/jabatan/{id}/edit', [AdminJabatanController::class, 'edit'])->name('admin.jabatan.edit');
+Route::put('/jabatan/{id}', [AdminJabatanController::class, 'update'])->name('admin.jabatan.update');
+Route::delete('/jabatan/{id}', [AdminJabatanController::class, 'destroy'])->name('admin.jabatan.destroy');
+Route::get('/jabatan', [AdminJabatanController::class, 'index'])->name('admin.jabatan.index');
+Route::get('/jabatan/create', [AdminJabatanController::class, 'create'])->name('admin.jabatan.create');
+Route::post('/jabatan', [AdminJabatanController::class, 'store'])->name('admin.jabatan.store');
+Route::get('/jabatan/{id}/edit', [AdminJabatanController::class, 'edit'])->name('admin.jabatan.edit');
+Route::put('/jabatan/{id}', [AdminJabatanController::class, 'update'])->name('admin.jabatan.update');
+Route::delete('/jabatan/{id}', [AdminJabatanController::class, 'destroy'])->name('admin.jabatan.destroy');
+Route::delete('/pegawai/{id}', [AdminJabatanController::class, 'destroyPegawai'])->name('admin.pegawai.destroy');
+
+Route::get('/pegawai/{id}/edit', [AdminJabatanController::class, 'editPegawai'])->name('admin.pegawai.edit');
+Route::put('/pegawai/{id}', [AdminJabatanController::class, 'updatePegawai'])->name('admin.pegawai.update');
+
+
+
+// Tambah pegawai di jabatan tertentu
+Route::get('/jabatan/{id}/pegawai/create', [AdminJabatanController::class, 'createPegawai'])->name('admin.jabatan.pegawai.create');
+Route::post('/jabatan/{id}/pegawai', [AdminJabatanController::class, 'storePegawai'])->name('admin.jabatan.pegawai.store');
+
+// Tambahan: lihat pegawai berdasarkan jabatan
+Route::get('/jabatan/{id}/pegawai', [AdminJabatanController::class, 'pegawai'])->name('admin.jabatan.pegawai');
+
+Route::prefix('admin')->middleware(['auth:pegawai', 'admin.only'])->group(function () {
+    Route::get('/jabatan', [JabatanController::class, 'index'])->name('jabatan.index');
+    Route::get('/jabatan/{id}/edit', [JabatanController::class, 'edit'])->name('jabatan.edit');
+    Route::put('/jabatan/{id}', [JabatanController::class, 'update'])->name('jabatan.update');
+    Route::delete('/jabatan/{id}', [JabatanController::class, 'destroy'])->name('jabatan.destroy');
+});
+
+Route::prefix('admin')->middleware(['auth:pegawai', 'admin.only'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::resource('/jabatan', JabatanController::class);
+});
+
+Route::prefix('admin')->middleware('auth:pegawai')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+    // Jabatan CRUD
+    Route::resource('/jabatan', JabatanController::class);
+});
+
 
 /*
 |--------------------------------------------------------------------------
@@ -135,6 +192,7 @@ Route::post('/logout-organisasi', [PenitipAuthController::class, 'logout'])->nam
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
+Route::get('/kategori/baru-masuk', [KategoriController::class, 'baruMasuk'])->name('kategori.baru');
 Route::get('/kategori/{id}', [KategoriController::class, 'show'])->name('kategori.show');
 Route::get('/barang/{id}', [BarangController::class, 'show'])->name('barang.show');
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');

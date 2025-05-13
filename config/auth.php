@@ -60,6 +60,11 @@ return [
             'driver' => 'session',
             'provider' => 'pegawais',
         ],
+
+        'owner' => [
+            'driver' => 'session',
+            'provider' => 'owners',
+        ],
     ],
 
     /*
@@ -103,6 +108,11 @@ return [
         'pegawais' => [
             'driver' => 'eloquent',
             'model' => App\Models\Pegawai::class,
+        ],
+
+        'owners' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Owner::class,
         ],
 
         // 'users' => [

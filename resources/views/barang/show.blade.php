@@ -86,7 +86,7 @@
         @if ($pembeli && !$userDiskusi)
             <div class="flex items-center justify-between mb-4 bg-yellow-100 text-yellow-800 p-4 rounded">
                 <p>Punya pertanyaan? Langsung diskusi dengan penjual saja</p>
-                <button onclick="document.getElementById('diskusiForm').scrollIntoView({ behavior: 'smooth' });"
+                <button onclick="scrollAndFocusTextarea()"
                         class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
                     Mulai Diskusi
                 </button>
@@ -161,6 +161,19 @@
 
     function closeLoginPrompt() {
         document.getElementById('loginPromptModal').classList.add('hidden');
+    }
+
+    function scrollAndFocusTextarea() {
+        const form = document.getElementById('diskusiForm');
+        const textarea = form?.querySelector('textarea');
+        if (form && textarea) {
+            form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            setTimeout(() => textarea.focus(), 500); // beri delay agar scroll selesai dulu
+        }
+    }
+
+    function showLoginPrompt() {
+        alert('Silakan login terlebih dahulu untuk mulai berdiskusi.');
     }
 </script>
 

@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Jabatan extends Model
 {
     use HasFactory;
+    protected $fillable = ['nama_jabatan'];
 
-    public function pegawai()
+    public function pegawais()
     {
         return $this->hasMany(Pegawai::class);
     }
+    
 }
