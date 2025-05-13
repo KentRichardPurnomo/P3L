@@ -15,11 +15,11 @@ class DonasiBarang extends Model
 
     public function organisasi()
     {
-        return $this->belongsTo(Organisasi::class);
+        return $this->belongsTo(\App\Models\Organisasi::class, 'organisasi_id');
     }
 
     public function kategori()
     {
-        return $this->belongsTo(\App\Models\Kategori::class, 'kategori_id');
+        return $this->belongsTo(Kategori::class, 'kategori_id');
     }
     }

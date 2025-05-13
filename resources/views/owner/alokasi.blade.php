@@ -15,7 +15,7 @@
         <select name="barang_id" id="barang_id" required class="w-full border rounded px-3 py-2">
             <option value="">-- Pilih Barang --</option>
             @foreach($barangs as $barang)
-                <option value="{{ $barang->id }}">{{ $barang->nama }} - {{ $barang->kategori }}</option>
+                <option value="{{ $barang->id }}">{{ $barang->nama }} - {{ $barang->kategori_id }}</option>
             @endforeach
         </select>
 

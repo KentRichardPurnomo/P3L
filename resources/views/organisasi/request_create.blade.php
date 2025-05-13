@@ -13,7 +13,7 @@
         </div>
 
         <div class="mb-4">
-            <label class="block mb-1">Deskripsi Alasan</label>
+            <label class="block mb-1">Deskripsi Detail</label>
             <textarea name="alasan" rows="4" class="w-full border p-2 rounded" required></textarea>
         </div>
 

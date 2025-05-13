@@ -24,7 +24,7 @@
             <tbody>
                 @foreach($requestDonasi as $req)
                     <tr class="border-b">
-                        <td class="py-2">{{ $req->organisasi->nama ?? 'Tidak diketahui' }}</td>
+                        <td class="py-2">{{ $req->organisasi->username ?? 'Tidak diketahui' }}</td>
                         <td>{{ $req->jenis_barang }}</td>
                         <td>{{ $req->alasan }}</td>
                         <td>

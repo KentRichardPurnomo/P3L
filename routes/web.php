@@ -39,18 +39,11 @@ Route::get('/login', [LoginUniversalController::class, 'showLoginForm'])->name('
 Route::post('/login', [LoginUniversalController::class, 'login'])->name('login.universal.submit');
 
 // owner
-Route::middleware(['auth:owner'])->group(function () {
-    Route::get('/owner/dashboard', [\App\Http\Controllers\Owner\DashboardController::class, 'index'])->name('owner.dashboard');
-});
-
 Route::middleware(['auth:owner'])->prefix('owner')->name('owner.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Owner\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/request-donasi', [\App\Http\Controllers\Owner\DashboardController::class, 'requestDonasi'])->name('request');
     Route::get('/histori-donasi', [\App\Http\Controllers\Owner\DashboardController::class, 'historiDonasi'])->name('histori');
-});
 
-Route::middleware(['auth:owner'])->prefix('owner')->name('owner.')->group(function () {
-    // ...
     Route::get('/alokasi/{requestDonasi}', [\App\Http\Controllers\Owner\AlokasiController::class, 'form'])->name('alokasi.form');
     Route::post('/alokasi/{requestDonasi}', [\App\Http\Controllers\Owner\AlokasiController::class, 'store'])->name('alokasi.store');
 });

@@ -95,36 +95,44 @@
     </div>
 
     <!-- DISKUSI -->
-    <div class="mt-10 bg-white p-6 rounded shadow">
-        <h3 class="text-xl font-bold mb-4">Diskusi Produk</h3>
+    <div id="diskusi" class="mt-12 bg-white p-6 rounded shadow">
+        <h2 class="text-xl font-bold mb-4">Diskusi & Pertanyaan</h2>
 
-        @forelse($barang->diskusis as $diskusi)
-            <div class="border-t pt-4 mt-4">
-                <p><strong>{{ $diskusi->user->username }}</strong> <span class="text-sm text-gray-500">({{ $diskusi->created_at->diffForHumans() }})</span></p>
-                <p class="mb-2 text-gray-700">{{ $diskusi->isi }}</p>
-
-                @if($diskusi->balasan)
-                    <div class="ml-4 p-3 bg-green-50 border-l-4 border-green-400 rounded text-sm">
-                        <strong class="text-green-800">Balasan Anda:</strong>
-                        <p class="text-gray-800">{{ $diskusi->balasan }}</p>
-                    </div>
-                @else
-                    <form action="{{ route('penitip.diskusi.balas', $diskusi->id) }}" method="POST" class="mt-3">
-                        @csrf
-                        <textarea name="balasan" rows="2" placeholder="Tulis balasan Anda..."
-                                class="w-full border rounded p-2 text-sm" required></textarea>
-                        <button type="submit"
-                                class="mt-2 bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm">
-                            Balas
-                        </button>
-                    </form>
-                @endif
+        @if ($pembeli && !$userDiskusi)
+            <div class="flex items-center justify-between mb-4 bg-yellow-100 text-yellow-800 p-4 rounded">
+                <p>Punya pertanyaan? Langsung diskusi dengan penjual saja</p>
+                <button onclick="scrollAndFocusTextarea()"
+                        class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
+                    Mulai Diskusi
+                </button>
             </div>
-        @empty
-            <p class="text-gray-500 italic">Belum ada pertanyaan dari pembeli.</p>
-        @endforelse
-    </div>
+        @elseif (!$pembeli)
+            <div class="flex items-center justify-between mb-4 bg-yellow-100 text-yellow-800 p-4 rounded">
+                <p>Punya pertanyaan? Langsung diskusi dengan penjual saja</p>
+                <button onclick="showLoginPrompt()"
+                        class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
+                    Mulai Diskusi
+                </button>
+            </div>
+        @endif
 
+        @if ($pembeli)
+        <form id="diskusiForm" action="{{ route('diskusi.store') }}" method="POST" class="mb-4">
+            @csrf
+            <input type="hidden" name="barang_id" value="{{ $barang->id }}">
+            <textarea name="isi" rows="3" class="w-full border rounded p-2"
+                      placeholder="Tulis pertanyaan atau komentar..."></textarea>
+            <button type="submit" class="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Kirim</button>
+        </form>
+        @endif
+
+        @foreach($barang->diskusis as $diskusi)
+            <div class="border-t py-2">
+                <span class="text-sm text-gray-500">{{ $diskusi->created_at->diffForHumans() }}</span>
+                <p class="text-sm">{{ $diskusi->isi }}</p>
+            </div>
+        @endforeach
+    </div>
 
     <!-- REKOMENDASI -->
     <div class="mt-12">
@@ -162,11 +170,17 @@
     }
 
     function showLoginPrompt() {
-        document.getElementById('loginPromptModal').classList.remove('hidden');
+        const modal = document.getElementById('loginPromptModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
     }
 
     function closeLoginPrompt() {
-        document.getElementById('loginPromptModal').classList.add('hidden');
+        const modal = document.getElementById('loginPromptModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
     }
 
     function scrollAndFocusTextarea() {
@@ -174,13 +188,16 @@
         const textarea = form?.querySelector('textarea');
         if (form && textarea) {
             form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => textarea.focus(), 500); // beri delay agar scroll selesai dulu
+            setTimeout(() => textarea.focus(), 500);
         }
     }
 
-    function showLoginPrompt() {
-        alert('Silakan login terlebih dahulu untuk mulai berdiskusi.');
-    }
+    // Tambahan: bisa tutup modal dengan tombol ESC
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            closeLoginPrompt();
+        }
+    });
 </script>
 
 <!-- MODAL LOGIN -->

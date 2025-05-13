@@ -18,16 +18,14 @@
                 <tr class="text-left border-b">
                     <th>Organisasi</th>
                     <th>Nama Barang</th>
-                    <th>Kategori ID</th>
                     <th>Tanggal Donasi</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($historiDonasi as $donasi)
                     <tr class="border-b">
-                        <td class="py-2">{{ $donasi->organisasi_id ?? 'Tidak diketahui' }}</td>
+                        <td class="py-2">{{ $donasi->organisasi->username ?? 'Tidak diketahui' }}</td>
                         <td>{{ $donasi->nama_barang }}</td>
-                        <td>{{ $donasi->kategori_id ?? '-' }}</td>
                         <td>{{ $donasi->tanggal_donasi ?? '-' }}</td>
                     </tr>
                 @endforeach

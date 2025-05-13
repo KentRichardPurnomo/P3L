@@ -13,7 +13,7 @@ class AlokasiController extends Controller
 {
     public function form(RequestDonasi $requestDonasi)
     {
-        $barangs = Barang::where('status', 'tersedia')->get();
+        $barangs = Barang::where('status', 'donasi')->get();
         return view('owner.alokasi', compact('requestDonasi', 'barangs'));
     }
 
@@ -29,16 +29,26 @@ class AlokasiController extends Controller
         DonasiBarang::create([
             'organisasi_id' => $requestDonasi->organisasi_id,
             'nama_barang'   => $barang->nama,
-            'kategori_id'   => $barang->kategori_id ?? null,
-            'deskripsi'     => $barang->deskripsi ?? null,
-            'tanggal_donasi'=> Carbon::now(),
+            'kategori_id'   => $barang->kategori_id,
+            'deskripsi'     => $barang->deskripsi,
+            'tanggal_donasi'=> now(),
         ]);
 
         // Ubah status barang
         $barang->status = 'didonasikan';
         $barang->save();
+
+        // Hapus request donasi
         $requestDonasi->delete();
 
-        return redirect()->route('owner.histori')->with('success', 'Barang berhasil dialokasikan!');
+        // ✅ Tambah poin untuk penitip jika ada
+        if ($barang->penitip_id) {
+            $penitip = \App\Models\Penitip::find($barang->penitip_id);
+            if ($penitip) {
+                $penitip->increment('poin', 1);
+            }
+        }
+
+        return redirect()->route('owner.histori')->with('success', 'Barang berhasil dialokasikan dan poin penitip ditambahkan!');
     }
 }

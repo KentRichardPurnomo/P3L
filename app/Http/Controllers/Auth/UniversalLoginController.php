@@ -78,5 +78,6 @@ class UniversalLoginController extends Controller
                     return redirect('/')->with('success', 'Berhasil login sebagai pegawai');
             }
         }
+        return back()->withErrors(['username' => 'Login gagal. Username atau password salah.']);
     }
 }
