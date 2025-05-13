@@ -31,11 +31,18 @@
         <input type="password" name="password" placeholder="Password"
                class="w-full border p-2 mb-3 rounded" required>
 
-        <select name="role" class="w-full border p-2 mb-4 rounded" required>
+        <select name="role" id="role" class="w-full border p-2 mb-4 rounded" required>
             <option value="">-- Pilih Role --</option>
             <option value="pembeli">Pembeli</option>
             <option value="organisasi">Organisasi</option>
         </select>
+
+        <!-- Field alamat, tersembunyi awalnya -->
+        <div id="alamat-field" class="hidden">
+            <input type="text" name="alamat" id="alamat"
+                   placeholder="Alamat Organisasi"
+                   class="w-full border p-2 mb-3 rounded">
+        </div>
 
         <button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
             Daftar
@@ -48,4 +55,23 @@
         </div>
     </form>
 </div>
+
+<!-- Script untuk menampilkan alamat jika role organisasi -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const roleSelect = document.getElementById('role');
+        const alamatField = document.getElementById('alamat-field');
+        const alamatInput = document.getElementById('alamat');
+
+        roleSelect.addEventListener('change', function () {
+            if (this.value === 'organisasi') {
+                alamatField.classList.remove('hidden');
+                alamatInput.setAttribute('required', 'required');
+            } else {
+                alamatField.classList.add('hidden');
+                alamatInput.removeAttribute('required');
+            }
+        });
+    });
+</script>
 @endsection

@@ -12,6 +12,6 @@ class RequestDonasi extends Model
 
     public function organisasi()
     {
-        return $this->belongsTo(Organisasi::class);
+        return $this->belongsTo(\App\Models\Organisasi::class);
     }
 }

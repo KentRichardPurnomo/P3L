@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Pembeli;
 use App\Models\Penitip;
+use App\Models\Organisasi;
+use App\Models\Pegawai;
+use App\Models\Owner;
 
 class UniversalLoginController extends Controller
 {
@@ -23,27 +26,60 @@ class UniversalLoginController extends Controller
             'password' => 'required',
         ]);
 
-        // Cek ke pembeli berdasarkan username
-        $pembeli = \App\Models\Pembeli::where('username', $request->username)->first();
-        if ($pembeli && Hash::check($request->password, $pembeli->password)) {
+        $username = $request->username;
+        $password = $request->password;
+
+        // Cek Pembeli
+        $pembeli = Pembeli::where('username', $username)->first();
+        if ($pembeli && Hash::check($password, $pembeli->password)) {
             Auth::guard('pembeli')->login($pembeli);
             return redirect('/')->with('success', 'Berhasil login sebagai pembeli');
         }
 
-        // Cek ke penitip berdasarkan username
-        $penitip = \App\Models\Penitip::where('username', $request->username)->first();
-        if ($penitip && Hash::check($request->password, $penitip->password)) {
+        // Cek Penitip
+        $penitip = Penitip::where('username', $username)->first();
+        if ($penitip && Hash::check($password, $penitip->password)) {
             Auth::guard('penitip')->login($penitip);
             return redirect()->route('penitip.dashboard')->with('success', 'Berhasil login sebagai penitip');
         }
 
         // Cek Organisasi
-        $organisasi = \App\Models\Organisasi::where('username', $request->username)->first();
-        if ($organisasi && Hash::check($request->password, $organisasi->password)) {
+        $organisasi = Organisasi::where('username', $username)->first();
+        if ($organisasi && Hash::check($password, $organisasi->password)) {
             Auth::guard('organisasi')->login($organisasi);
             return redirect()->route('organisasi.dashboard')->with('success', 'Berhasil login sebagai organisasi');
         }
 
-        return back()->withErrors(['username' => 'Username atau password salah']);
+        // Cek Owner
+        $owner = Owner::where('username', $username)->first();
+        if ($owner && Hash::check($password, $owner->password)) {
+            Auth::guard('owner')->login($owner);
+            return redirect()->route('owner.dashboard')->with('success', 'Berhasil login sebagai owner');
+        }
+
+        // ✅ Cek Pegawai
+        $pegawai = Pegawai::where('username', $username)->first();
+        if ($pegawai && Hash::check($password, $pegawai->password)) {
+            Auth::guard('pegawai')->login($pegawai);
+
+            // Ambil nama jabatan
+            $jabatan = strtolower($pegawai->jabatan->nama_jabatan); // misal: 'admin', 'owner'
+
+            // Arahkan ke dashboard berdasarkan jabatan
+            switch ($jabatan) {
+                case 'admin':
+                    return redirect()->route('admin.dashboard')->with('success', 'Berhasil login sebagai admin');
+                case 'owner':
+                    return redirect()->route('owner.dashboard')->with('success', 'Berhasil login sebagai owner');
+                case 'cs':
+                    return redirect()->route('cs.dashboard')->with('success', 'Berhasil login sebagai CS');
+                case 'pegawai gudang':
+                    return redirect()->route('gudang.dashboard')->with('success', 'Berhasil login sebagai pegawai gudang');
+                case 'kurir':
+                    return redirect()->route('kurir.dashboard')->with('success', 'Berhasil login sebagai kurir');
+                default:
+                    return redirect('/')->with('success', 'Berhasil login sebagai pegawai');
+            }
+        }
     }
 }

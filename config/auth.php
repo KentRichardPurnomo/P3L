@@ -55,6 +55,16 @@ return [
             'driver' => 'session',
             'provider' => 'organisasis'
         ],
+
+        'pegawai' => [
+            'driver' => 'session',
+            'provider' => 'pegawais',
+        ],
+
+        'owner' => [
+            'driver' => 'session',
+            'provider' => 'owners',
+        ],
     ],
 
     /*
@@ -93,6 +103,16 @@ return [
         'organisasis' => [
             'driver' => 'eloquent',
             'model' => App\Models\Organisasi::class,
+        ],
+
+        'pegawais' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Pegawai::class,
+        ],
+
+        'owners' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Owner::class,
         ],
 
         // 'users' => [

@@ -16,6 +16,7 @@ class Organisasi extends Authenticatable
         'email',
         'no_telp',
         'password',
+        'alamat',
         'plaintext_password',
         'profile_picture',
     ];

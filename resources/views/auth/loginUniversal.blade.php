@@ -29,6 +29,12 @@
         </button>
 
         <div class="mt-4 text-center">
+    <a href="{{ route('password.forgot') }}" class="text-blue-600 hover:underline">
+        Lupa Password?
+    </a>
+</div>
+
+        <div class="mt-4 text-center">
             <p>Belum memiliki akun?
                 <a href="{{ route('register.all') }}" class="text-blue-600 hover:underline">Daftar di sini</a>
             </p>

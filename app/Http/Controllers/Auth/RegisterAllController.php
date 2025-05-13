@@ -41,9 +41,10 @@ class RegisterAllController extends Controller
                 'no_telp' => $request->no_telp,
                 'plaintext_password' => $request->password,
                 'password' => Hash::make($request->password),
+                'alamat' => $request->alamat,
             ]);
         }
 
-        return redirect()->route('login.universal')->with('success', 'Registrasi berhasil! Silakan login.');  
+        return redirect()->route('login.universal')->with('success', 'Registrasi berhasil! Silakan login.');
     }
 }

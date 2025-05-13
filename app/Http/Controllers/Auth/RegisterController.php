@@ -46,6 +46,7 @@ class RegisterController extends Controller
                 'email' => $request->email,
                 'no_telp' => $request->no_telp,
                 'password' => Hash::make($request->password),
+                'alamat' => $request->alamat,
             ]);
         }
 
@@ -53,3 +54,4 @@ class RegisterController extends Controller
         return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
     }
 }
+
