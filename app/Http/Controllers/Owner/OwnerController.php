@@ -18,11 +18,11 @@ class OwnerController extends Controller
         return view('owner.dashboard', compact('owner', 'requestDonasi'));
     }
 
-    public function historyDonasiOrganisasi($organisasi_id)
+        public function historyDonasiOrganisasi($organisasi_id)
     {
         // Mengambil semua request donasi yang dikirim ke organisasi tertentu
         $history = RequestDonasi::where('organisasi_id', $organisasi_id)
-                                ->with('organisasi')
+                                ->with('organisasi') // Memuat relasi organisasi
                                 ->get();
 
         // Ambil data organisasi berdasarkan ID
@@ -30,4 +30,5 @@ class OwnerController extends Controller
 
         return view('owner.history_donasi', compact('organisasi', 'history'));
     }
+
 }

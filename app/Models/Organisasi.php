@@ -25,4 +25,9 @@ class Organisasi extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function requestDonasi()
+    {
+        return $this->hasMany(RequestDonasi::class, 'organisasi_id');
+    }
 }

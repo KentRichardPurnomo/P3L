@@ -19,7 +19,7 @@
             <tbody>
                 @foreach ($history as $donasi)
                     <tr>
-                        <td class="border px-4 py-2">{{ $donasi->organisasi-> username }}</td>
+                        <td class="border px-4 py-2">{{ $donasi->organisasi->username }}</td>
                         <td class="border px-4 py-2">{{ $donasi->jenis_barang }}</td>
                         <td class="border px-4 py-2">{{ $donasi->alasan }}</td>
                         <td class="border px-4 py-2">{{ $donasi->created_at->format('d M Y') }}</td>
