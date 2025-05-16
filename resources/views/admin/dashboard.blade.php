@@ -18,6 +18,9 @@
         <a href="{{ route('admin.organisasi.index') }}" class="block text-center bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">
             Lihat Organisasi
         </a>
+        <a href="{{ route('admin.pegawai.index') }}" class="block text-center bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700">
+            Cari Data Pegawai
+        </a>
     </div>
 </div>
 @endsection

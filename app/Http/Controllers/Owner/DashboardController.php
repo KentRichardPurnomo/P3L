@@ -23,9 +23,19 @@ class DashboardController extends Controller
         return view('owner.request', compact('requestDonasi'));
     }
 
-    public function historiDonasi()
+    public function historiDonasi(Request $request)
     {
-        $historiDonasi = DonasiBarang::with('organisasi')->latest()->get();
+        $query = DonasiBarang::with('organisasi');
+
+        if ($request->filled('alamat')) {
+            $alamat = $request->input('alamat');
+            $query->whereHas('organisasi', function ($q) use ($alamat) {
+                $q->where('alamat', 'like', '%' . $alamat . '%');
+            });
+        }
+
+        $historiDonasi = DonasiBarang::with('organisasi')->orderBy('tanggal_donasi', 'desc')->get();
+
         return view('owner.histori', compact('historiDonasi'));
     }
 }

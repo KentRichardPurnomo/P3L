@@ -46,7 +46,13 @@ Route::middleware(['auth:owner'])->prefix('owner')->name('owner.')->group(functi
 
     Route::get('/alokasi/{requestDonasi}', [\App\Http\Controllers\Owner\AlokasiController::class, 'form'])->name('alokasi.form');
     Route::post('/alokasi/{requestDonasi}', [\App\Http\Controllers\Owner\AlokasiController::class, 'store'])->name('alokasi.store');
+
+    Route::get('/donasi/{id}/edit', [\App\Http\Controllers\Owner\DonasiController::class, 'edit'])->name('donasi.edit');
+    Route::put('/donasi/{id}', [\App\Http\Controllers\Owner\DonasiController::class, 'update'])->name('donasi.update');
 });
+
+
+
 
 // Dashboard pegawai (blank sementara)
 Route::get('/pegawai/dashboard', [PegawaiController::class, 'dashboard'])->name('pegawai.dashboard')->middleware('auth:pegawai');
@@ -83,6 +89,11 @@ Route::prefix('admin')->middleware(['auth:pegawai', 'admin.only'])->group(functi
     Route::get('/organisasi/{username}/edit', [AdminOrganisasiController::class, 'edit'])->name('admin.organisasi.edit');
     Route::put('/organisasi/{username}', [AdminOrganisasiController::class, 'update'])->name('admin.organisasi.update');
 });
+
+Route::middleware(['auth:pegawai'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/pegawai', [\App\Http\Controllers\Admin\PegawaiController::class, 'index'])->name('pegawai.index');
+});
+
 
 Route::delete('/organisasi/{id}', [AdminOrganisasiController::class, 'destroy'])->name('admin.organisasi.destroy');
 
@@ -167,11 +178,20 @@ Route::middleware('auth:pembeli')->prefix('profil')->group(function () {
     Route::post('/alamat/{id}/default', [ProfilController::class, 'setDefaultAlamat'])->name('pembeli.alamat.default');
 });
 
+Route::middleware(['auth:pembeli'])->group(function () {
+    Route::get('/pembeli/riwayat-pembelian', [\App\Http\Controllers\Pembeli\ProfilController::class, 'riwayatPembelian'])->name('pembeli.riwayat');
+});
+
 Route::middleware('auth:pembeli')->group(function () {
     Route::get('/profil', [ProfilController::class, 'index'])->name('pembeli.profil');
     Route::get('/profil/edit', [ProfilController::class, 'edit'])->name('pembeli.profil.edit');
     Route::post('/profil/update', [ProfilController::class, 'update'])->name('pembeli.profil.update');
     Route::post('/profil/upload-foto', [ProfilController::class, 'uploadFoto'])->name('pembeli.profil.upload_foto');
+});
+
+Route::middleware(['auth:pembeli'])->prefix('pembeli/alamat')->name('pembeli.alamat.')->group(function () {
+    Route::get('/create', [\App\Http\Controllers\Pembeli\AlamatController::class, 'create'])->name('create');
+    Route::post('/', [\App\Http\Controllers\Pembeli\AlamatController::class, 'store'])->name('store');
 });
 
 Route::middleware('auth:pembeli')->prefix('pembeli')->group(function () {

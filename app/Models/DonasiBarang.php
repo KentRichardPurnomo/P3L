@@ -10,7 +10,7 @@ class DonasiBarang extends Model
     use HasFactory;
 
     protected $fillable = [
-        'organisasi_id', 'nama_barang', 'kategori', 'deskripsi', 'tanggal_donasi'
+        'organisasi_id', 'nama_penerima', 'kategori_id','nama_barang', 'deskripsi', 'tanggal_donasi'
     ];
 
     public function organisasi()

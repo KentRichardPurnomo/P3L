@@ -37,46 +37,15 @@
             class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mt-4">
             Kelola Alamat
         </a>
+
+        <a href="{{ route('pembeli.riwayat') }}"
+            class="inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 mt-4">
+            Riwayat Pembelian
+        </a>
     </div>
     
 
-    {{-- Riwayat Pembelian --}}
-    <div class="mt-10">
-        <h3 class="text-lg font-semibold mb-3">Riwayat Pembelian</h3>
 
-        @php
-            $barangPernahDibeli = collect();
-
-            foreach($transaksis as $transaksi) {
-                foreach($transaksi->detail as $item) {
-                    if ($item->barang && $item->barang->terjual) {
-                        $barangPernahDibeli->push($item->barang);
-                    }
-                }
-            }
-
-            // Hilangkan duplikat berdasarkan id barang
-            $barangPernahDibeli = $barangPernahDibeli->unique('id');
-        @endphp
-
-        @if($barangPernahDibeli->isNotEmpty())
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                @foreach($barangPernahDibeli as $barang)
-                    <div class="border rounded shadow p-3 bg-white flex flex-col">
-                        <img src="{{ asset('images/barang/' . $barang->id . '/' . $barang->thumbnail) }}"
-                            class="w-full h-32 object-cover rounded mb-2">
-                        <h4 class="text-sm font-semibold">{{ $barang->nama }}</h4>
-                        <p class="text-xs text-gray-600 mb-2">Rp {{ number_format($barang->harga, 0, ',', '.') }}</p>
-
-                        <a href="{{ route('pembeli.transaksi.detail', [$transaksi->id, $item->barang_id]) }}"
-                            class="text-blue-600 hover:underline text-sm">Lihat Detail</a>
-                    </div>
-                @endforeach
-            </div>
-        @else
-            <p class="text-sm text-gray-500 italic">Belum ada Riwayat Transaksi.</p>
-        @endif
-    </div>
 
 </div>
 @endsection

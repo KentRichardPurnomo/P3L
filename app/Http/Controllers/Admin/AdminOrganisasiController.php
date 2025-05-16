@@ -8,9 +8,16 @@ use App\Models\Organisasi;
 
 class AdminOrganisasiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $organisasis = Organisasi::all();
+        $query = Organisasi::query();
+
+        if ($request->filled('search')) {
+            $query->where('username', 'like', '%' . $request->search . '%');
+        }
+
+        $organisasis = $query->get();
+
         return view('admin.admineditorganisasi', compact('organisasis'));
     }
 

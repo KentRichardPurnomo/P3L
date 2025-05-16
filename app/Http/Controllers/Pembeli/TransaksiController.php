@@ -31,7 +31,7 @@ class TransaksiController extends Controller
 
         $tanggalKirim = $transaksi->tanggal;
         $tanggalSampai = \Carbon\Carbon::parse($tanggalKirim)->addDays(3);
-        $alamatTujuan = $transaksi->alamat_pengiriman ?? $transaksi->pembeli->defaultAlamat->alamat ?? 'Alamat tidak tersedia';
+        $alamatTujuan = $transaksi->alamat_pengiriman ?? $transaksi->pembeli->alamat_pembeli->id ?? 'Alamat tidak tersedia';
 
         return view('pembeli.detail_transaksi', compact(
             'barang', 'jumlah', 'subtotal', 'tanggalKirim', 'tanggalSampai', 'alamatTujuan'
