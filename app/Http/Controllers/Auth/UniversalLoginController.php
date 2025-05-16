@@ -10,7 +10,6 @@ use App\Models\Pembeli;
 use App\Models\Penitip;
 use App\Models\Organisasi;
 use App\Models\Pegawai;
-use App\Models\Owner;
 
 class UniversalLoginController extends Controller
 {
@@ -51,7 +50,7 @@ class UniversalLoginController extends Controller
         }
 
         // Cek Owner
-        $owner = Owner::where('username', $username)->first();
+        $owner = \App\Models\Owner::where('username', $username)->first();
         if ($owner && Hash::check($password, $owner->password)) {
             Auth::guard('owner')->login($owner);
             return redirect()->route('owner.dashboard')->with('success', 'Berhasil login sebagai owner');
@@ -69,8 +68,6 @@ class UniversalLoginController extends Controller
             switch ($jabatan) {
                 case 'admin':
                     return redirect()->route('admin.dashboard')->with('success', 'Berhasil login sebagai admin');
-                case 'owner':
-                    return redirect()->route('owner.dashboard')->with('success', 'Berhasil login sebagai owner');
                 case 'cs':
                     return redirect()->route('cs.dashboard')->with('success', 'Berhasil login sebagai CS');
                 case 'pegawai gudang':
@@ -81,5 +78,6 @@ class UniversalLoginController extends Controller
                     return redirect('/')->with('success', 'Berhasil login sebagai pegawai');
             }
         }
+        return back()->withErrors(['username' => 'Login gagal. Username atau password salah.']);
     }
 }

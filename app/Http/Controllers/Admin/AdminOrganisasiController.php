@@ -8,9 +8,17 @@ use App\Models\Organisasi;
 
 class AdminOrganisasiController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $organisasis = Organisasi::all();
+        // Ambil keyword dari input 'search'
+        $search = $request->input('search');
+
+        // Jika ada keyword pencarian, filter berdasarkan username
+        $organisasis = Organisasi::when($search, function ($query, $search) {
+            return $query->where('username', 'like', '%' . $search . '%');
+        })->get();
+
+        // Kirim data ke view
         return view('admin.admineditorganisasi', compact('organisasis'));
     }
 

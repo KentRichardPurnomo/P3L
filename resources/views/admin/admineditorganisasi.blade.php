@@ -16,6 +16,17 @@
         </div>
     @endif
 
+    <!-- Form Pencarian -->
+    <form method="GET" action="{{ route('admin.organisasi.index') }}" class="mb-6">
+        <input type="text" name="search" placeholder="Cari nama organisasi..."
+               value="{{ request('search') }}"
+               class="border px-3 py-2 rounded w-1/3">
+        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded ml-2 hover:bg-blue-700">
+            Cari
+        </button>
+    </form>
+
+    <!-- Tabel Organisasi -->
     <table class="w-full border">
         <thead>
             <tr class="bg-gray-100">
@@ -28,7 +39,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($organisasis as $index => $org)
+            @forelse($organisasis as $index => $org)
             <tr class="border-t">
                 <td class="p-2">{{ $index + 1 }}</td>
                 <td class="p-2">{{ $org->username }}</td>
@@ -37,7 +48,6 @@
                 <td class="p-2">{{ $org->alamat ?? '-' }}</td>
                 <td class="p-2 flex gap-2">
                     <a href="{{ route('admin.organisasi.edit', $org->id) }}" class="text-blue-600 hover:underline">Edit</a>
-
                     <form action="{{ route('admin.organisasi.destroy', $org->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus organisasi ini?')">
                         @csrf
                         @method('DELETE')
@@ -45,7 +55,11 @@
                     </form>
                 </td>
             </tr>
-            @endforeach
+            @empty
+            <tr>
+                <td colspan="6" class="text-center text-gray-500 py-4">Tidak ada data organisasi.</td>
+            </tr>
+            @endforelse
         </tbody>
     </table>
 </div>

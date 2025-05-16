@@ -2,6 +2,12 @@
 
 @section('content')
 <div class="max-w-md mx-auto mt-10 bg-white p-6 rounded shadow">
+    <div class="mb-4">
+        <a href="{{ url('/profil') }}"
+           class="inline-flex items-center text-green-600 hover:text-green-800 font-semibold">
+            ← Kembali
+        </a>
+    </div>
     <h2 class="text-xl font-bold mb-4">Edit Profil Pembeli</h2>
 
     <form action="{{ route('pembeli.profil.update') }}" method="POST" enctype="multipart/form-data" class="space-y-4">

@@ -6,6 +6,8 @@
     $pembeli = Auth::guard('pembeli')->user();
 @endphp
 
+
+
 @section('content')
 <div class="p-6">
     <div class="flex flex-col md:flex-row gap-6">
@@ -56,11 +58,24 @@
 
         <!-- CARD AKSI -->
         <div class="md:w-1/4">
+                @if(session('success'))
+                    <div class="mb-4 bg-green-100 text-green-800 p-2 rounded">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div class="mb-4 bg-red-100 text-red-800 p-2 rounded">
+                        {{ session('error') }}
+                    </div>
+                @endif
             <div class="bg-white p-4 rounded shadow space-y-3 sticky top-24">
                 <h1 class="text-2xl font-bold mb-2">{{ $barang->nama }}</h1>
             <p class="text-xl text-orange-600 font-semibold mb-4">Rp {{ number_format($barang->harga, 0, ',', '.') }}</p>
                 @if ($pembeli)
-                    <button class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">+ Keranjang</button>
+                    <form method="POST" action="{{ route('keranjang.tambah', $barang->id) }}">
+                        @csrf
+                        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">+ Keranjang</button>
+                    </form>
                     <button class="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600">Beli Sekarang</button>
                 @else
                     <button onclick="showLoginPrompt()"
@@ -113,7 +128,6 @@
 
         @foreach($barang->diskusis as $diskusi)
             <div class="border-t py-2">
-                <strong>{{ $diskusi->user->name }}</strong>
                 <span class="text-sm text-gray-500">{{ $diskusi->created_at->diffForHumans() }}</span>
                 <p class="text-sm">{{ $diskusi->isi }}</p>
             </div>
@@ -156,11 +170,17 @@
     }
 
     function showLoginPrompt() {
-        document.getElementById('loginPromptModal').classList.remove('hidden');
+        const modal = document.getElementById('loginPromptModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
     }
 
     function closeLoginPrompt() {
-        document.getElementById('loginPromptModal').classList.add('hidden');
+        const modal = document.getElementById('loginPromptModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
     }
 
     function scrollAndFocusTextarea() {
@@ -168,13 +188,16 @@
         const textarea = form?.querySelector('textarea');
         if (form && textarea) {
             form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            setTimeout(() => textarea.focus(), 500); // beri delay agar scroll selesai dulu
+            setTimeout(() => textarea.focus(), 500);
         }
     }
 
-    function showLoginPrompt() {
-        alert('Silakan login terlebih dahulu untuk mulai berdiskusi.');
-    }
+    // Tambahan: bisa tutup modal dengan tombol ESC
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            closeLoginPrompt();
+        }
+    });
 </script>
 
 <!-- MODAL LOGIN -->

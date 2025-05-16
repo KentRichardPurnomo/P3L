@@ -45,6 +45,11 @@ class Barang extends Model
     {
         return $this->belongsTo(\App\Models\Penitip::class);
     }
+
+    public function detailTransaksis()
+    {
+        return $this->hasMany(\App\Models\DetailTransaksi::class, 'barang_id'); // BUKAN 'id_barang'
+    }
 }
 
 

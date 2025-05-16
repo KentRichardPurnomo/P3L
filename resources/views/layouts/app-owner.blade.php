@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ReuseMart - Dashboard Owner</title>
+    <title>ReuseMart</title>
     @vite('resources/css/app.css')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
@@ -10,7 +10,6 @@
 
 <body class="bg-gray-100 font-sans">
 
-    <!-- Notifikasi Toast -->
     @if(session('success'))
         <div id="toast"
             class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded shadow z-50 animate-bounce-in-up text-sm">
@@ -26,19 +25,19 @@
     </script>
 
     <style>
-        @keyframes bounce-in-up {
-            0% {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
+    @keyframes bounce-in-up {
+        0% {
+            opacity: 0;
+            transform: translateY(40px);
         }
-        .animate-bounce-in-up {
-            animation: bounce-in-up 0.3s ease-out;
+        100% {
+            opacity: 1;
+            transform: translateY(0);
         }
+    }
+    .animate-bounce-in-up {
+        animation: bounce-in-up 0.3s ease-out;
+    }
     </style>
 
     <!-- Topbar -->
@@ -68,7 +67,7 @@
 
     <!-- Konten -->
     <main>
-        @yield('content') <!-- Konten yang di-yield dari halaman lain -->
+        @yield('content')
     </main>
 
     <!-- Footer -->

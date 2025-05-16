@@ -11,11 +11,11 @@ class Transaksi extends Model
 
     public function pembeli()
     {
-        return $this->belongsTo(Pembeli::class);
+        return $this->belongsTo(\App\Models\Pembeli::class, 'id_pembeli');
     }
 
     public function detail()
     {
-        return $this->hasMany(DetailTransaksi::class);
+        return $this->hasMany(\App\Models\DetailTransaksi::class);
     }
 }

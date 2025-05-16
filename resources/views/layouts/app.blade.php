@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 </head>
-
+    
 <!-- Modal Peringatan Belum Login -->
 <div id="loginPromptModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
     <div class="bg-white w-96 rounded-lg p-6 shadow-lg text-center">
@@ -117,13 +117,18 @@
                 <!-- Tombol Keranjang -->
                 @if($pembeli)
                     <a href="{{ route('cart.index') }}"
-                       class="bg-green-700 text-white px-4 py-2 ml-2 rounded hover:bg-green-800 flex items-center justify-center"
-                       title="Keranjang">
+                        class="relative bg-green-700 text-white px-4 py-2 ml-2 rounded hover:bg-green-800 flex items-center justify-center"
+                        title="Keranjang">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round"
-                                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.6 8m12.2-8l1.6 8M6 21a1 1 0 100-2 1 1 0 000 2zm12 0a1 1 0 100-2 1 1 0 000 2z" />
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.6 8m12.2-8l1.6 8M6 21a1 1 0 100-2 1 1 0 000 2zm12 0a1 1 0 100-2 1 1 0 000 2z" />
                         </svg>
+                        @if(isset($jumlahKeranjang) && $jumlahKeranjang > 0)
+                            <span class="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                                {{ $jumlahKeranjang }}
+                            </span>
+                        @endif
                     </a>
                 @else
                     <button type="button"
