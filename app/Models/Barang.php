@@ -17,12 +17,15 @@ class Barang extends Model
         'thumbnail',
         'foto_lain',
         'garansi_berlaku_hingga',
+        'quality_check',
         'terjual',
+        'batas_waktu_titip',
+        'penitip_id',
     ];
 
     protected $casts = [
-        'foto_lain' => 'array',
         'garansi_berlaku_hingga' => 'date',
+        'batas_waktu_titip' => 'date',
     ];
 
     public function kategori()
@@ -49,6 +52,11 @@ class Barang extends Model
     public function detailTransaksis()
     {
         return $this->hasMany(\App\Models\DetailTransaksi::class, 'barang_id'); // BUKAN 'id_barang'
+    }
+
+    public function qualityChecker()
+    {
+        return $this->belongsTo(\App\Models\Pegawai::class, 'quality_check');
     }
 }
 

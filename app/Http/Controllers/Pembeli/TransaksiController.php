@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use App\Models\Transaksi;
 use App\Models\Barang;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Keranjang;
+use App\Models\AlamatPembeli;
+use App\Models\DetailTransaksi;
+use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TransaksiController extends Controller
 {
@@ -37,4 +42,218 @@ class TransaksiController extends Controller
             'barang', 'jumlah', 'subtotal', 'tanggalKirim', 'tanggalSampai', 'alamatTujuan'
         ));
     }
+
+    public function pembayaranForm()
+    {
+        $pembeli = Auth::guard('pembeli')->user();
+        $items = Keranjang::with('barang')->where('pembeli_id', $pembeli->id)->get();
+        $alamatList = $pembeli->alamat;
+        $alamatDefault = $pembeli->defaultAlamat;
+        $poinPembeli = $pembeli->poin;
+
+        return view('pembeli.pembayaran', compact('items', 'alamatList', 'alamatDefault', 'poinPembeli'));
+    }
+
+    public function prosesPembayaran(Request $request)
+    {
+        $pembeli = Auth::guard('pembeli')->user();
+
+        $request->validate([
+            'tipe_pengiriman' => 'required|in:ambil,kirim',
+            'poin_ditukar' => 'required|integer|min:0',
+            'alamat_pengiriman_id' => 'nullable|exists:alamat_pembelis,id'
+        ]);
+
+        $keranjang = Keranjang::with('barang')->where('pembeli_id', $pembeli->id)->get();
+
+        if ($keranjang->isEmpty()) {
+            return redirect()->route('cart')->with('error', 'Keranjang kosong.');
+        }
+
+        $totalBarang = 0;
+        foreach ($keranjang as $item) {
+            $totalBarang += $item->barang->harga;
+        }
+
+        $ongkir = $request->tipe_pengiriman === 'kirim' && $totalBarang < 1500000 ? 100000 : 0;
+        $poinDitukar = min($request->poin_ditukar, $pembeli->poin);
+        $potongan = $poinDitukar * 10000;
+        $totalAkhir = max(0, $totalBarang + $ongkir - $potongan);
+
+        // Simpan transaksi
+        $transaksi = Transaksi::create([
+            'pembeli_id' => $pembeli->id,
+            'tanggal' => now(),
+            'alamat_pengiriman_id' => $request->tipe_pengiriman === 'kirim' ? $request->alamat_pengiriman_id : null,
+            'tipe_pengiriman' => $request->tipe_pengiriman,
+            'poin_ditukar' => $poinDitukar,
+            'potongan' => $potongan,
+            'total' => $totalAkhir,
+            'status' => 'menunggu pembayaran',
+            'deadline_pembayaran' => now()->addMinutes(15),
+        ]);
+
+        $poinBaru = 0;
+
+        // Simpan detail & update barang
+        foreach ($keranjang as $item) {
+            $barang = $item->barang;
+
+            DetailTransaksi::create([
+                'transaksi_id' => $transaksi->id,
+                'barang_id' => $barang->id,
+                'jumlah' => 1,
+                'subtotal' => $barang->harga,
+            ]);
+
+            // Update barang terjual
+            $barang->update(['terjual' => 1]);
+
+            // Hitung poin reward
+            $poin = floor($barang->harga / 10000);
+            if ($barang->harga > 500000) {
+                $bonus = floor($barang->harga * 0.2 / 10000);
+                $poin += $bonus;
+            }
+            $poinBaru += $poin;
+        }
+
+        // Update poin pembeli
+        $pembeli->poin = max(0, $pembeli->poin - $poinDitukar + $poinBaru);
+        $pembeli->save();
+
+        // Kosongkan keranjang
+        Keranjang::where('pembeli_id', $pembeli->id)->delete();
+
+        return redirect()->route('pembeli.transaksi.uploadBuktiForm', $transaksi->id)
+            ->with('success', 'Transaksi berhasil dibuat. Silakan upload bukti pembayaran.');
+    }
+
+    public function uploadBuktiForm($id)
+    {
+        $pembeli = Auth::guard('pembeli')->user();
+        $transaksi = Transaksi::where('id', $id)->where('pembeli_id', $pembeli->id)->firstOrFail();
+
+        return view('pembeli.upload_bukti', compact('transaksi'));
+    }
+
+    public function submitBuktiTransfer(Request $request, $id)
+    {
+        $pembeli = Auth::guard('pembeli')->user();
+        $transaksi = Transaksi::where('id', $id)->where('pembeli_id', $pembeli->id)->firstOrFail();
+
+        $request->validate([
+            'bukti_transfer' => 'required|image|mimes:jpg,jpeg|max:2048',
+        ]);
+
+        $file = $request->file('bukti_transfer');
+        $filename = 'bukti_' . $transaksi->id . '.jpg';
+        $folder = public_path('uploads/bukti-transfer');
+
+        if (!file_exists($folder)) {
+            mkdir($folder, 0775, true);
+        }
+
+        $file->move($folder, $filename);
+
+        $transaksi->update([
+            'bukti_transfer' => 'uploads/bukti-transfer/' . $filename,
+            'status' => 'menunggu konfirmasi',
+        ]);
+
+        return redirect()->route('dashboard.pembeli')->with('success', 'Bukti transfer berhasil diupload. Menunggu konfirmasi.');
+    }
+
+    public function gagalBayar($id)
+    {
+        $transaksi = \App\Models\Transaksi::with(['pembeli', 'detail.barang'])->findOrFail($id);
+
+        // Cegah jika status transaksi bukan "menunggu pembayaran"
+        if ($transaksi->status !== 'menunggu pembayaran') {
+            return redirect()->route('home');
+        }
+
+        // Pastikan relasi pembeli ada
+        if (!$transaksi->pembeli) {
+            return redirect()->route('home')->with('error', 'Data pembeli tidak ditemukan.');
+        }
+
+        $pembeli = $transaksi->pembeli;
+
+        // ✅ 1. Kembalikan poin potongan (jika ada)
+        $pembeli->poin += $transaksi->poin_ditukar;
+
+        // ✅ 2. Batalkan poin reward yang didapat dari pembelian
+        $poinReward = 0;
+
+        foreach ($transaksi->detail as $detail) {
+            $barang = $detail->barang;
+
+            if ($barang) {
+                // Ubah status barang jadi tersedia
+                $barang->terjual = 0;
+                $barang->save();
+
+                // Hitung poin yang sempat didapatkan
+                $poin = floor($barang->harga / 10000);
+                if ($barang->harga > 500000) {
+                    $bonus = floor($barang->harga * 0.2 / 10000);
+                    $poin += $bonus;
+                }
+                $poinReward += $poin;
+            }
+        }
+
+        // Kurangi poin reward (tidak jadi dapat)
+        $pembeli->poin = max(0, $pembeli->poin - $poinReward);
+        $pembeli->save();
+
+        // ✅ 3. Update status transaksi
+        $transaksi->update([
+            'status' => 'pembayaran gagal'
+        ]);
+
+        // ✅ 4. Redirect ke home dengan notifikasi modal
+        return redirect()->route('home')->with('gagal_pembayaran', true);
+    }
+
+    public function riwayat()
+    {
+        $pembeli = Auth::guard('pembeli')->user();
+
+        $transaksis = Transaksi::with(['detail.barang'])
+            ->where('pembeli_id', $pembeli->id)
+            ->latest()
+            ->get();
+
+        return view('pembeli.riwayatpembelian', compact('transaksis', 'pembeli'));
+    }
+
+    public function detail($id)
+    {
+        $pembeli = Auth::guard('pembeli')->user();
+
+        $transaksi = \App\Models\Transaksi::with(['detail.barang', 'alamat'])
+            ->where('id', $id)
+            ->where('pembeli_id', $pembeli->id)
+            ->firstOrFail();
+
+        return view('pembeli.riwayatdetail', compact('transaksi'));
+    }
+
+    public function cetakNota($id)
+    {
+        $pembeli = Auth::guard('pembeli')->user();
+
+        $transaksi = \App\Models\Transaksi::with(['detail.barang', 'alamat'])
+            ->where('id', $id)
+            ->where('pembeli_id', $pembeli->id)
+            ->firstOrFail();
+
+        $pdf = Pdf::loadView('pembeli.nota', compact('transaksi'))
+                ->setPaper('a4', 'portrait');
+
+        return $pdf->stream("nota-transaksi-{$transaksi->id}.pdf");
+    }
+
 }

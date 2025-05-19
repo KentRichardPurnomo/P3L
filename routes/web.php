@@ -34,6 +34,8 @@ use App\Http\Controllers\CS\CSDashboardController;
 use App\Http\Controllers\CS\CSBarangController;
 use App\Http\Controllers\CS\CSDiskusiController;
 use App\Http\Controllers\Pembeli\TransaksiController;
+use App\Http\Controllers\Gudang\GudangDashboardController;
+use App\Http\Controllers\Gudang\BarangGudangController;
 
 Route::get('/login', [LoginUniversalController::class, 'showLoginForm'])->name('login.universal');
 Route::post('/login', [LoginUniversalController::class, 'login'])->name('login.universal.submit');
@@ -80,6 +82,8 @@ Route::get('/barang/{id}/edit', [CSBarangController::class, 'edit'])->name('cs.b
 Route::put('/barang/{id}', [CSBarangController::class, 'update'])->name('cs.barang.update');
 
 Route::post('/cs/diskusi/{id}/balas', [CSDiskusiController::class, 'balas'])->name('cs.diskusi.balas');
+Route::get('/cs/diskusi-belum-dibalas', [\App\Http\Controllers\CS\CSBarangController::class, 'diskusiBelumDibalas'])
+    ->name('cs.diskusi.belumdibalas');
 
 
 
@@ -140,6 +144,20 @@ Route::prefix('admin')->middleware('auth:pegawai')->group(function () {
     Route::resource('/jabatan', JabatanController::class);
 });
 
+//Pegawai Gudang
+Route::middleware(['auth:pegawai'])->group(function () {
+    Route::get('/gudang/dashboard', [GudangDashboardController::class, 'index'])->name('gudang.dashboard');
+});
+Route::prefix('gudang')->middleware(['auth:pegawai'])->group(function () {
+    Route::get('/barang/create', [BarangGudangController::class, 'create'])->name('gudang.barang.create');
+    Route::get('/gudang/barang', [BarangGudangController::class, 'index'])->name('gudang.barang.index');
+    Route::post('/gudang/barang', [BarangGudangController::class, 'store'])->name('gudang.barang.store');
+    Route::get('/gudang/barang/{id}', [BarangGudangController::class, 'show'])->name('gudang.barang.show');
+    Route::get('/gudang/barang/{id}/edit', [BarangGudangController::class, 'edit'])->name('gudang.barang.edit');
+    Route::delete('/gudang/barang/{id}', [BarangGudangController::class, 'destroy'])->name('gudang.barang.destroy');
+    Route::put('/gudang/barang/{id}', [BarangGudangController::class, 'update'])->name('gudang.barang.update');
+});
+
 
 /*
 |--------------------------------------------------------------------------
@@ -178,9 +196,17 @@ Route::middleware('auth:pembeli')->prefix('profil')->group(function () {
     Route::post('/alamat/{id}/default', [ProfilController::class, 'setDefaultAlamat'])->name('pembeli.alamat.default');
 });
 
-Route::middleware(['auth:pembeli'])->group(function () {
-    Route::get('/pembeli/riwayat-pembelian', [\App\Http\Controllers\Pembeli\ProfilController::class, 'riwayatPembelian'])->name('pembeli.riwayat');
-});
+Route::get('/pembeli/pembayaran-gagal/{id}', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'gagalBayar'])
+    ->name('pembeli.transaksi.gagalBayar');
+
+Route::get('/pembeli/riwayat', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'riwayat'])
+    ->name('pembeli.transaksi.riwayat');
+
+Route::get('/pembeli/riwayat/{id}', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'detail'])
+    ->name('pembeli.transaksi.detail');
+
+Route::get('/pembeli/riwayat/{id}/cetak', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'cetakNota'])
+    ->name('pembeli.transaksi.cetakNota');
 
 Route::middleware('auth:pembeli')->group(function () {
     Route::get('/profil', [ProfilController::class, 'index'])->name('pembeli.profil');
@@ -217,10 +243,22 @@ Route::delete('/keranjang/{id}', [KeranjangController::class, 'hapus'])->name('k
 
 Route::post('/diskusi', [DiskusiController::class, 'store'])->middleware('auth:pembeli')->name('diskusi.store');
 
-Route::get('/pembeli/transaksi/{transaksi}/barang/{barang}', [TransaksiController::class, 'showDetail'])
-     ->middleware('auth:pembeli')
-     ->name('pembeli.transaksi.detail');
+Route::get('/pembeli/pembayaran', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'pembayaranForm'])
+    ->name('pembeli.pembayaran.form');
 
+Route::post('/pembeli/proses-pembayaran', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'prosesPembayaran'])
+    ->name('pembeli.transaksi.proses');
+
+Route::get('/pembeli/upload-bukti/{id}', [TransaksiController::class, 'uploadBuktiForm'])
+    ->name('pembeli.transaksi.uploadBuktiForm');
+
+// GET form upload bukti
+Route::get('/pembeli/upload-bukti/{id}', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'uploadBuktiForm'])
+    ->name('pembeli.transaksi.uploadBuktiForm');
+
+// POST submit bukti
+Route::post('/pembeli/upload-bukti/{id}', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'submitBuktiTransfer'])
+    ->name('pembeli.transaksi.submitBukti');
 
 Route::middleware('auth:penitip')->group(function () {
     Route::get('/penitip/dashboard', [DashboardPenitipController::class, 'index'])->name('penitip.dashboard');

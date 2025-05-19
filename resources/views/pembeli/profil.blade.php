@@ -38,7 +38,7 @@
             Kelola Alamat
         </a>
 
-        <a href="{{ route('pembeli.riwayat') }}"
+        <a href="{{ route('pembeli.transaksi.riwayat') }}"
             class="inline-block bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 mt-4">
             Riwayat Pembelian
         </a>

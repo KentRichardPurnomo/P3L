@@ -10,10 +10,16 @@ use App\Models\Pembeli;
 
 class AlamatController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $pembeli = Auth::guard('pembeli')->user();
-        $alamatList = $pembeli->alamat;
+        $query = $pembeli->alamat(); // relasi dari model Pembeli → alamat_pembelis
+        if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where('alamat', 'like', '%' . $search . '%');
+        }
+
+        $alamatList = $query->get();
         $defaultAlamatId = $pembeli->default_alamat_id;
 
         return view('pembeli.kelola_alamat', compact('alamatList', 'defaultAlamatId'));

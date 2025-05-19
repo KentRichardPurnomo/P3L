@@ -48,6 +48,14 @@
             @endforeach
         </div>
 
+        <!-- Tombol Bayar -->
+        <div class="mt-4 text-right">
+            <a href="{{ route('pembeli.pembayaran.form') }}"
+            class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                Bayar Sekarang
+            </a>
+        </div>
+
         <!-- Total -->
         <div class="mt-6 text-right">
             <h3 class="text-xl font-bold">Total: Rp {{ number_format($total, 0, ',', '.') }}</h3>

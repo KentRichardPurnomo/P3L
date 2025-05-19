@@ -18,6 +18,14 @@
             </a>
         </div>
 
+        <form method="GET" action="{{ route('pembeli.alamat.index') }}" class="mb-6">
+            <input type="text" name="search" value="{{ request('search') }}"
+                placeholder="Cari alamat..." class="w-full sm:w-1/2 border px-4 py-2 rounded">
+            <button type="submit" class="mt-2 sm:mt-0 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Cari
+            </button>
+        </form>
+
         @if(session('success'))
             <div class="mb-4 bg-green-100 text-green-800 p-2 rounded">
                 {{ session('success') }}
@@ -27,8 +35,12 @@
         <div class="grid gap-4">
             @if($alamatList->isEmpty())
                 <div class="bg-yellow-100 text-yellow-800 p-4 rounded text-sm text-center">
-                    Anda belum menambahkan alamat Anda.<br>
-                    <strong>Ayo tambahkan alamat untuk bisa membeli barang di ReuseMart!</strong>
+                    @if(request('search'))
+                        Alamat dengan kata kunci <strong>"{{ request('search') }}"</strong> tidak ditemukan.
+                    @else
+                        Anda belum menambahkan alamat Anda.<br>
+                        <strong>Ayo tambahkan alamat untuk bisa membeli barang di ReuseMart!</strong>
+                    @endif
                 </div>
             @else
                 <div class="grid gap-4">
