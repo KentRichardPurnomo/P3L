@@ -10,15 +10,14 @@ class AdminOrganisasiController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil keyword dari input 'search'
-        $search = $request->input('search');
+        $query = Organisasi::query();
 
-        // Jika ada keyword pencarian, filter berdasarkan username
-        $organisasis = Organisasi::when($search, function ($query, $search) {
-            return $query->where('username', 'like', '%' . $search . '%');
-        })->get();
+        if ($request->filled('search')) {
+            $query->where('username', 'like', '%' . $request->search . '%');
+        }
 
-        // Kirim data ke view
+        $organisasis = $query->get();
+
         return view('admin.admineditorganisasi', compact('organisasis'));
     }
 

@@ -14,15 +14,20 @@
     </div>
 
     <!-- Aksi -->
-    <div class="space-y-4">
+    <div class="space-y-4"> 
         <a href="{{ route('cs.penitip.index') }}"
            class="block bg-blue-600 text-white px-4 py-3 rounded hover:bg-blue-700 text-center font-semibold">
             Kelola Data Penitip
         </a>
 
-        <a href="{{ route('cs.barang.semua') }}"
-           class="block bg-green-600 text-white px-4 py-3 rounded hover:bg-green-700 text-center font-semibold">
-            Kelola Data Barang
+        <a href="{{ route('cs.diskusi.belumdibalas') }}"
+            class="block bg-orange-600 text-white px-4 py-3 rounded hover:bg-orange-700 text-center font-semibold relative">
+            💬 Lihat Diskusi Belum Dibalas
+            @if($jumlahDiskusiBelumDibalas > 0)
+                <span class="absolute top-0 right-0 -mt-1 -mr-2 bg-white text-red-600 font-bold text-xs rounded-full px-2 py-1 shadow">
+                    {{ $jumlahDiskusiBelumDibalas }}
+                </span>
+            @endif
         </a>
     </div>
 </div>

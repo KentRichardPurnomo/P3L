@@ -10,31 +10,18 @@ use Illuminate\Http\Request;
 
 class OrganisasiController extends Controller
 {
-    public function index(Request $request)
-{
-    $organisasi = Auth::guard('organisasi')->user();
-    $search = $request->input('cari_request');
+    public function index()
+    {
+        $organisasi = Auth::guard('organisasi')->user();
+        $allRequests = RequestDonasi::where('organisasi_id', '!=', $organisasi->id)->get();
 
-    // Ambil semua request donasi dari organisasi lain (filtered jika ada pencarian)
-    $allRequests = RequestDonasi::with('organisasi')
+        $ownRequests = RequestDonasi::where('organisasi_id', $organisasi->id)->get();
+        $otherRequests = RequestDonasi::with('organisasi')
         ->where('organisasi_id', '!=', $organisasi->id)
-        ->when($search, function ($query) use ($search) {
-            $query->where('jenis_barang', 'like', '%' . $search . '%')
-                  ->orWhere('alasan', 'like', '%' . $search . '%');
-        })
         ->get();
 
-    // Request donasi milik organisasi saat ini (filtered juga)
-    $ownRequests = RequestDonasi::where('organisasi_id', $organisasi->id)
-        ->when($search, function ($query) use ($search) {
-            $query->where('jenis_barang', 'like', '%' . $search . '%')
-                  ->orWhere('alasan', 'like', '%' . $search . '%');
-        })
-        ->get();
-
-    return view('organisasi.dashboard', compact('organisasi', 'ownRequests', 'allRequests'));
-}
-
+        return view('organisasi.dashboard', compact('organisasi', 'allRequests', 'ownRequests', 'otherRequests'));
+    }
 
     public function updateProfilePicture(Request $request)
     {

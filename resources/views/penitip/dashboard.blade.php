@@ -23,21 +23,88 @@
         </a>
     </div>
 
-    {{-- Barang Aktif --}}
-    <div>
-        <h3 class="text-lg font-semibold mb-3">Barang yang Sedang Dititipkan</h3>
+    {{-- Barang Aktif dengan Pencarian --}}
+    <div class="max-w-4xl mx-auto p-6 bg-white shadow rounded">
+        <h2 class="text-xl font-bold mb-4">Barang yang Sedang Dititipkan</h2>
+
+        <form method="GET" class="mb-4">
+            <div class="flex items-center">
+                <input type="text" name="cari" placeholder="Cari nama barang..." class="border px-3 py-2 rounded flex-1" value="{{ request('cari') }}">
+                <button class="bg-blue-500 text-white px-3 py-2 rounded ml-2 hover:bg-blue-600 transition">
+                    <i class="fas fa-search mr-1"></i> Cari
+                </button>
+            </div>
+        </form>
+
         @if($barangAktif->isEmpty())
-            <p class="text-sm text-gray-500">Tidak ada barang aktif saat ini.</p>
+            <p class="text-sm text-gray-500 py-4 text-center">Tidak ada barang aktif saat ini.</p>
         @else
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
                 @foreach($barangAktif as $barang)
-                    <a href="{{ route('penitip.barang.show', $barang->id) }}"class="border rounded p-3 hover:shadow transition">
-                        <img src="{{ asset('images/barang/' . $barang->id . '/' . $barang->thumbnail) }}"
-                             class="w-full h-32 object-cover rounded mb-2">
+                    <div class="border rounded p-3 bg-white hover:shadow-md transition duration-200 flex flex-col">
+                        <div class="relative">
+                            <img src="{{ asset('images/barang/' . $barang->id . '/' . $barang->thumbnail) }}"
+                                 class="w-full h-40 object-cover rounded mb-2">
+                            <span class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">Aktif</span>
+                        </div>
                         <h4 class="font-semibold text-sm">{{ $barang->nama }}</h4>
                         <p class="text-sm text-gray-600">Rp {{ number_format($barang->harga, 0, ',', '.') }}</p>
-                    </a>
+                        <p class="text-xs text-gray-500 mt-1">Kategori: {{ $barang->kategori->nama ?? 'Tanpa kategori' }}</p>
+                        
+                        {{-- Informasi masa penitipan --}}
+                        <p class="text-xs text-gray-600 mt-2">Masa Titip Hingga: <strong>{{ \Carbon\Carbon::parse($barang->batas_waktu_titip)->format('d-m-Y') }}</strong></p>
+
+                        {{-- Status perpanjangan --}}
+                        <p class="text-xs mt-1">
+                            Status Perpanjangan:
+                            @if($barang->status_perpanjangan)
+                                <span class="text-green-600 font-medium">TRUE ✅</span>
+                            @else
+                                <span class="text-red-600 font-medium">FALSE ❌</span>
+                            @endif
+                        </p>
+
+                        {{-- Tombol Perpanjangan --}}
+                        @if(!$barang->status_perpanjangan)
+                            <form action="{{ route('penitip.barang.perpanjang', $barang->id) }}" method="POST" class="mt-2">
+                                @csrf
+                                <button type="submit" onclick="return confirm('Perpanjang masa penitipan barang ini selama 30 hari?')"
+                                    class="bg-yellow-500 text-white text-xs px-3 py-1 rounded hover:bg-yellow-600 w-full">
+                                    ⏳ Perpanjang 30 Hari
+                                </button>
+                            </form>
+                        @endif
+
+                        <div class="mt-auto pt-3 flex flex-col space-y-2">
+
+                            {{-- Tombol Konfirmasi --}}
+                            @if (!$barang->status_pengambilan)
+                                <form action="{{ route('penitip.barang.konfirmasi-pengambilan', $barang->id) }}" method="POST" class="w-full">
+                                    @csrf
+                                    <button type="submit" 
+                                            onclick="return confirm('Apakah Anda yakin akan mengkonfirmasi pengambilan barang ini?')"
+                                            class="w-full text-xs bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 transition">
+                                        Konfirmasi Pengambilan
+                                    </button>
+                                </form>
+                            @else
+                                <div class="text-xs text-green-600 font-medium text-center bg-green-100 px-2 py-1 rounded">
+                                    ✅ Siap Diambil
+                                </div>
+                            @endif
+
+                            {{-- Tombol Detail --}}
+                            <a href="{{ route('penitip.barang.show', $barang->id) }}" 
+                               class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded inline-block text-center">
+                               Detail
+                            </a>
+                        </div>
+                    </div>
                 @endforeach
+            </div>
+            
+            <div class="mt-4">
+                {{ $barangAktif->links() }}
             </div>
         @endif
     </div>
@@ -59,58 +126,12 @@
                     </a>
                 @endforeach
             </div>
-        @endif
-    </div>
-
-    {{-- Tabel Barang Tidak Laku --}}
-    <div>
-        <h3 class="text-lg font-semibold mb-3 mt-8">Barang yang Belum Terjual</h3>
-        @if($barangTidakLaku->isEmpty())
-            <p class="text-sm text-gray-500">Semua barang sudah terjual atau ada dalam transaksi.</p>
-        @else
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white border rounded-lg overflow-hidden">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gambar</th>
-                            <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
-                            <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Harga</th>
-                            <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pemilik</th>
-                            <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontak</th>
-                            <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        @foreach($barangTidakLaku as $barang)
-                            <tr class="hover:bg-gray-50">
-                                <td class="py-2 px-3">
-                                    <img src="{{ asset('images/barang/' . $barang->id . '/' . $barang->thumbnail) }}"
-                                         class="w-16 h-16 object-cover rounded">
-                                </td>
-                                <td class="py-2 px-3 text-sm">{{ $barang->nama }}</td>
-                                <td class="py-2 px-3 text-sm">Rp {{ number_format($barang->harga, 0, ',', '.') }}</td>
-                                <td class="py-2 px-3 text-sm">{{ $barang->penitip->username }}</td>
-                                <td class="py-2 px-3 text-sm">
-                                    <p>{{ $barang->penitip->email }}</p>
-                                    <p>{{ $barang->penitip->no_telp }}</p>
-                                </td>
-                                <td class="py-2 px-3">
-                                    <span class="text-xs text-red-600 font-medium">❌ Tidak Laku</span>
-                                </td>
-                                <td class="py-2 px-3">
-                                    <a href="{{ route('penitip.barang.show', $barang->id) }}" 
-                                       class="text-xs bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded">
-                                        Detail
-                                    </a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+            
+            <div class="mt-4">
+                {{ $barangTerjual->links() }}
             </div>
         @endif
     </div>
-    
+
 </div>
 @endsection

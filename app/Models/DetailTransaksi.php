@@ -9,6 +9,13 @@ class DetailTransaksi extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'transaksi_id',
+        'barang_id',
+        'jumlah',
+        'subtotal',
+    ];
+
     public function barang()
     {
         return $this->belongsTo(\App\Models\Barang::class);

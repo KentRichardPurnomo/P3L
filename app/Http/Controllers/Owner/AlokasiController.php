@@ -20,7 +20,8 @@ class AlokasiController extends Controller
     public function store(Request $request, RequestDonasi $requestDonasi)
     {
         $request->validate([
-            'barang_id' => 'required|exists:barangs,id'
+            'barang_id' => 'required|exists:barangs,id',
+            'nama_penerima' => 'required|string|max:100'
         ]);
 
         $barang = Barang::findOrFail($request->barang_id);
@@ -28,6 +29,7 @@ class AlokasiController extends Controller
         // Simpan ke donasi_barangs
         DonasiBarang::create([
             'organisasi_id' => $requestDonasi->organisasi_id,
+            'nama_penerima'   => $request->nama_penerima,
             'nama_barang'   => $barang->nama,
             'kategori_id'   => $barang->kategori_id,
             'deskripsi'     => $barang->deskripsi,
@@ -44,8 +46,9 @@ class AlokasiController extends Controller
         // ✅ Tambah poin untuk penitip jika ada
         if ($barang->penitip_id) {
             $penitip = \App\Models\Penitip::find($barang->penitip_id);
-            if ($penitip) {
-                $penitip->increment('poin', 1);
+            if ($penitip && $barang->harga) {
+                $tambahanPoin = floor($barang->harga / 10000);
+                $penitip->increment('poin', $tambahanPoin);
             }
         }
 

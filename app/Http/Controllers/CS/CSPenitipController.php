@@ -10,21 +10,11 @@ use Illuminate\Support\Facades\Hash;
 
 class CSPenitipController extends Controller
 {
-            public function index(Request $request)
+    public function index()
     {
-        $keyword = $request->keyword;
-
-        $penitips = Penitip::when($keyword, function ($query) use ($keyword) {
-            $query->where('username', 'like', "%$keyword%")
-                ->orWhere('email', 'like', "%$keyword%")
-                ->orWhere('no_telp', 'like', "%$keyword%")
-                ->orWhere('no_ktp', 'like', "%$keyword%");
-        })->paginate(10);
-
+        $penitips = Penitip::all();
         return view('cs.csindexpenitip', compact('penitips'));
     }
-
-
 
     public function barangPenitip($id)
     {

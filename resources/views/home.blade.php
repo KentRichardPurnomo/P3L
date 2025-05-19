@@ -2,6 +2,17 @@
 
 @section('content')
 
+@if(session('gagal_pembayaran'))
+<div id="modalGagal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded shadow-lg text-center">
+        <h2 class="text-xl font-bold text-red-600 mb-2">Pembayaran Gagal</h2>
+        <p class="mb-4 text-sm text-gray-700">Waktu pembayaran telah habis. Silakan lakukan pemesanan ulang.</p>
+        <button onclick="document.getElementById('modalGagal').remove()"
+                class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Tutup</button>
+    </div>
+</div>
+@endif
+
 <!-- Navigasi kategori teks -->
 <div class="bg-orange-100 text-sm px-6 py-2 flex justify-center space-x-6 overflow-x-auto sticky top-[96px] z-30">
     @php

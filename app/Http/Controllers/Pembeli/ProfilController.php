@@ -78,5 +78,14 @@ class ProfilController extends Controller
         $pembeli->update(['default_alamat_id' => $id]);
         return back()->with('success', 'Alamat default diperbarui.');
     }
+
+    public function riwayatPembelian()
+    {
+        $pembeli = auth()->guard('pembeli')->user();
+
+        $transaksis = $pembeli->transaksis()->with('detail.barang')->get();
+
+        return view('pembeli.riwayatpembelian', compact('transaksis'));
+    }
     
 }

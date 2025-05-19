@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Barang;
 use App\Models\Penitip;
+use App\Models\Diskusi;
 
 class CSBarangController extends Controller
 {
@@ -91,5 +92,35 @@ class CSBarangController extends Controller
         }
 
         return redirect()->route('cs.barang.show', $barang->id)->with('success', 'Barang berhasil diperbarui.');
+    }
+
+    public function semua(Request $request)
+    {
+        $query = Barang::with('penitip')
+            ->withCount([
+                'diskusis as diskusi_belum_dibalas_count' => function ($q) {
+                    $q->whereNull('balasan');
+                }
+            ]);
+
+        // Jika filter dipilih
+        if ($request->filter === 'belum_dibalas') {
+            $query->having('diskusi_belum_dibalas_count', '>', 0);
+        }
+
+        $barangs = $query->paginate(9);
+
+        return view('cs.cssemuabarang', compact('barangs'));
+    }
+
+    public function diskusiBelumDibalas()
+    {
+        $diskusis = Diskusi::with('barang')
+            ->whereNotNull('barang_id')
+            ->whereNull('balasan')
+            ->latest()
+            ->get();
+
+        return view('cs.csdiskusibelumbalas', compact('diskusis'));
     }
 }

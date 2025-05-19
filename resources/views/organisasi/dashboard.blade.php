@@ -26,44 +26,35 @@
         Edit Profil
     </a>
 
+
     <a href="{{ route('organisasi.request.create') }}"
        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mb-6 inline-block">
         + Request Donasi
     </a>
 
-    <!-- Form Pencarian Request Donasi -->
-    <form method="GET" action="{{ route('organisasi.dashboard') }}" class="mb-4">
-        <input type="text" name="cari_request" value="{{ request('cari_request') }}" placeholder="Cari request donasi..."
-            class="border px-3 py-2 rounded w-1/2">
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded ml-2 hover:bg-blue-700">
-            Cari
-        </button>
-    </form>
-
     <h3 class="text-xl font-semibold mt-8 mb-2">Request Donasi Anda</h3>
-    <ul class="space-y-3">
-        @forelse ($ownRequests as $req)
-            <li class="border p-3 rounded bg-white shadow-sm">
-                <p><strong>Jenis Barang:</strong> {{ $req->jenis_barang }}</p>
-                <p><strong>Alasan:</strong> {{ $req->alasan }}</p>
+        <ul class="space-y-3">
+            @forelse ($ownRequests as $req)
+                <li class="border p-3 rounded bg-white shadow-sm">
+                    <p><strong>Jenis Barang:</strong> {{ $req->jenis_barang }}</p>
+                    <p><strong>Alasan:</strong> {{ $req->alasan }}</p>
 
-                <div class="mt-2 flex gap-2">
-                    <a href="{{ route('organisasi.request.edit', $req->id) }}"
-                    class="text-blue-600 hover:underline">Edit</a>
+                    <div class="mt-2 flex gap-2">
+                        <a href="{{ route('organisasi.request.edit', $req->id) }}"
+                        class="text-blue-600 hover:underline">Edit</a>
 
-                    <form action="{{ route('organisasi.request.destroy', $req->id) }}" method="POST"
-                        onsubmit="return confirm('Yakin ingin menghapus request ini?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:underline">Hapus</button>
-                    </form>
-                </div>
-            </li>
-        @empty
-            <p class="text-gray-500">Belum ada request donasi yang Anda buat.</p>
-        @endforelse
-    </ul>
-
+                        <form action="{{ route('organisasi.request.destroy', $req->id) }}" method="POST"
+                            onsubmit="return confirm('Yakin ingin menghapus request ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-red-600 hover:underline">Hapus</button>
+                        </form>
+                    </div>
+                </li>
+            @empty
+                <p class="text-gray-500">Belum ada request donasi yang Anda buat.</p>
+            @endforelse
+        </ul>
     <h3 class="text-xl font-semibold mt-6 mb-2">Request Donasi dari Organisasi Lain</h3>
     <ul class="space-y-3">
         @forelse ($allRequests as $req)
@@ -84,7 +75,7 @@
     <div class="mb-4 bg-green-100 text-green-800 p-3 rounded">
         {{ session('success') }}
     </div>
-    @endif
+@endif
 
 </div>
 @endsection

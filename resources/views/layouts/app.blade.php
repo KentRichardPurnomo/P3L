@@ -29,7 +29,7 @@
 
     @if(session('success'))
         <div id="toast"
-            class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded shadow z-50 animate-bounce-in-up text-sm">
+            class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded shadow z-50 animate-bounce-in-up text-sm">
             {{ session('success') }}
         </div>
     @endif

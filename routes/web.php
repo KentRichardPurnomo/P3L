@@ -35,6 +35,7 @@ use App\Http\Controllers\CS\CSBarangController;
 use App\Http\Controllers\CS\CSDiskusiController;
 use App\Http\Controllers\Pembeli\TransaksiController;
 use App\Http\Controllers\Gudang\GudangDashboardController;
+use App\Http\Controllers\Gudang\BarangGudangController;
 
 Route::get('/login', [LoginUniversalController::class, 'showLoginForm'])->name('login.universal');
 Route::post('/login', [LoginUniversalController::class, 'login'])->name('login.universal.submit');
@@ -47,7 +48,13 @@ Route::middleware(['auth:owner'])->prefix('owner')->name('owner.')->group(functi
 
     Route::get('/alokasi/{requestDonasi}', [\App\Http\Controllers\Owner\AlokasiController::class, 'form'])->name('alokasi.form');
     Route::post('/alokasi/{requestDonasi}', [\App\Http\Controllers\Owner\AlokasiController::class, 'store'])->name('alokasi.store');
+
+    Route::get('/donasi/{id}/edit', [\App\Http\Controllers\Owner\DonasiController::class, 'edit'])->name('donasi.edit');
+    Route::put('/donasi/{id}', [\App\Http\Controllers\Owner\DonasiController::class, 'update'])->name('donasi.update');
 });
+
+
+
 
 // Dashboard pegawai (blank sementara)
 Route::get('/pegawai/dashboard', [PegawaiController::class, 'dashboard'])->name('pegawai.dashboard')->middleware('auth:pegawai');
@@ -75,6 +82,8 @@ Route::get('/barang/{id}/edit', [CSBarangController::class, 'edit'])->name('cs.b
 Route::put('/barang/{id}', [CSBarangController::class, 'update'])->name('cs.barang.update');
 
 Route::post('/cs/diskusi/{id}/balas', [CSDiskusiController::class, 'balas'])->name('cs.diskusi.balas');
+Route::get('/cs/diskusi-belum-dibalas', [\App\Http\Controllers\CS\CSBarangController::class, 'diskusiBelumDibalas'])
+    ->name('cs.diskusi.belumdibalas');
 
 
 
@@ -84,6 +93,11 @@ Route::prefix('admin')->middleware(['auth:pegawai', 'admin.only'])->group(functi
     Route::get('/organisasi/{username}/edit', [AdminOrganisasiController::class, 'edit'])->name('admin.organisasi.edit');
     Route::put('/organisasi/{username}', [AdminOrganisasiController::class, 'update'])->name('admin.organisasi.update');
 });
+
+Route::middleware(['auth:pegawai'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/pegawai', [\App\Http\Controllers\Admin\PegawaiController::class, 'index'])->name('pegawai.index');
+});
+
 
 Route::delete('/organisasi/{id}', [AdminOrganisasiController::class, 'destroy'])->name('admin.organisasi.destroy');
 
@@ -102,8 +116,7 @@ Route::delete('/pegawai/{id}', [AdminJabatanController::class, 'destroyPegawai']
 Route::get('/pegawai/{id}/edit', [AdminJabatanController::class, 'editPegawai'])->name('admin.pegawai.edit');
 Route::put('/pegawai/{id}', [AdminJabatanController::class, 'updatePegawai'])->name('admin.pegawai.update');
 
-// gudang
-Route::get('/gudang/dashboard', [GudangDashboardController::class, 'index'])->name('gudang.dashboard');
+
 
 // Tambah pegawai di jabatan tertentu
 Route::get('/jabatan/{id}/pegawai/create', [AdminJabatanController::class, 'createPegawai'])->name('admin.jabatan.pegawai.create');
@@ -129,6 +142,20 @@ Route::prefix('admin')->middleware('auth:pegawai')->group(function () {
 
     // Jabatan CRUD
     Route::resource('/jabatan', JabatanController::class);
+});
+
+//Pegawai Gudang
+Route::middleware(['auth:pegawai'])->group(function () {
+    Route::get('/gudang/dashboard', [GudangDashboardController::class, 'index'])->name('gudang.dashboard');
+});
+Route::prefix('gudang')->middleware(['auth:pegawai'])->group(function () {
+    Route::get('/barang/create', [BarangGudangController::class, 'create'])->name('gudang.barang.create');
+    Route::get('/gudang/barang', [BarangGudangController::class, 'index'])->name('gudang.barang.index');
+    Route::post('/gudang/barang', [BarangGudangController::class, 'store'])->name('gudang.barang.store');
+    Route::get('/gudang/barang/{id}', [BarangGudangController::class, 'show'])->name('gudang.barang.show');
+    Route::get('/gudang/barang/{id}/edit', [BarangGudangController::class, 'edit'])->name('gudang.barang.edit');
+    Route::delete('/gudang/barang/{id}', [BarangGudangController::class, 'destroy'])->name('gudang.barang.destroy');
+    Route::put('/gudang/barang/{id}', [BarangGudangController::class, 'update'])->name('gudang.barang.update');
 });
 
 
@@ -169,11 +196,28 @@ Route::middleware('auth:pembeli')->prefix('profil')->group(function () {
     Route::post('/alamat/{id}/default', [ProfilController::class, 'setDefaultAlamat'])->name('pembeli.alamat.default');
 });
 
+Route::get('/pembeli/pembayaran-gagal/{id}', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'gagalBayar'])
+    ->name('pembeli.transaksi.gagalBayar');
+
+Route::get('/pembeli/riwayat', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'riwayat'])
+    ->name('pembeli.transaksi.riwayat');
+
+Route::get('/pembeli/riwayat/{id}', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'detail'])
+    ->name('pembeli.transaksi.detail');
+
+Route::get('/pembeli/riwayat/{id}/cetak', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'cetakNota'])
+    ->name('pembeli.transaksi.cetakNota');
+
 Route::middleware('auth:pembeli')->group(function () {
     Route::get('/profil', [ProfilController::class, 'index'])->name('pembeli.profil');
     Route::get('/profil/edit', [ProfilController::class, 'edit'])->name('pembeli.profil.edit');
     Route::post('/profil/update', [ProfilController::class, 'update'])->name('pembeli.profil.update');
     Route::post('/profil/upload-foto', [ProfilController::class, 'uploadFoto'])->name('pembeli.profil.upload_foto');
+});
+
+Route::middleware(['auth:pembeli'])->prefix('pembeli/alamat')->name('pembeli.alamat.')->group(function () {
+    Route::get('/create', [\App\Http\Controllers\Pembeli\AlamatController::class, 'create'])->name('create');
+    Route::post('/', [\App\Http\Controllers\Pembeli\AlamatController::class, 'store'])->name('store');
 });
 
 Route::middleware('auth:pembeli')->prefix('pembeli')->group(function () {
@@ -199,10 +243,22 @@ Route::delete('/keranjang/{id}', [KeranjangController::class, 'hapus'])->name('k
 
 Route::post('/diskusi', [DiskusiController::class, 'store'])->middleware('auth:pembeli')->name('diskusi.store');
 
-Route::get('/pembeli/transaksi/{transaksi}/barang/{barang}', [TransaksiController::class, 'showDetail'])
-     ->middleware('auth:pembeli')
-     ->name('pembeli.transaksi.detail');
+Route::get('/pembeli/pembayaran', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'pembayaranForm'])
+    ->name('pembeli.pembayaran.form');
 
+Route::post('/pembeli/proses-pembayaran', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'prosesPembayaran'])
+    ->name('pembeli.transaksi.proses');
+
+Route::get('/pembeli/upload-bukti/{id}', [TransaksiController::class, 'uploadBuktiForm'])
+    ->name('pembeli.transaksi.uploadBuktiForm');
+
+// GET form upload bukti
+Route::get('/pembeli/upload-bukti/{id}', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'uploadBuktiForm'])
+    ->name('pembeli.transaksi.uploadBuktiForm');
+
+// POST submit bukti
+Route::post('/pembeli/upload-bukti/{id}', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'submitBuktiTransfer'])
+    ->name('pembeli.transaksi.submitBukti');
 
 Route::middleware('auth:penitip')->group(function () {
     Route::get('/penitip/dashboard', [DashboardPenitipController::class, 'index'])->name('penitip.dashboard');
@@ -212,7 +268,11 @@ Route::middleware('auth:penitip')->get('/penitip/barang/{id}', [BarangController
 
 Route::middleware('auth:penitip')->group(function () {
     Route::get('/penitip/barang/{id}', [\App\Http\Controllers\Penitip\BarangPenitipController::class, 'show'])->name('penitip.barang.show');
+    Route::post('/penitip/barang/{id}/perpanjang', [\App\Http\Controllers\Penitip\BarangController::class, 'perpanjang'])->name('penitip.barang.perpanjang');
+    Route::post('/penitip/barang/{id}/konfirmasi-pengambilan', [\App\Http\Controllers\Penitip\BarangController::class, 'konfirmasiPengambilan'])->name('penitip.barang.konfirmasi-pengambilan');
 });
+
+
 
 
 Route::middleware('auth:penitip')->prefix('penitip')->group(function () {
@@ -230,11 +290,6 @@ Route::middleware('auth:penitip')->prefix('penitip')->group(function () {
     Route::get('/profil', [ProfilPenitipController::class, 'edit'])->name('penitip.profil.edit');
     Route::post('/profil', [ProfilPenitipController::class, 'update'])->name('penitip.profil.update');
 });
-
-Route::middleware(['auth', 'role:penitip'])->group(function () {
-    Route::get('/penitip/barang-tidak-laku', [BarangController::class, 'barangTidakLaku'])->name('penitip.barang.tidak-laku');
-});
-
 
 Route::get('/barang/{id}', [BarangController::class, 'show'])->name('barang.show');
 
