@@ -73,6 +73,18 @@ Route::prefix('cs')->middleware('auth:pegawai')->group(function () {
     Route::get('/penitip/{id}/edit', [CSPenitipController::class, 'edit'])->name('cs.penitip.edit');
     Route::put('/penitip/{id}', [CSPenitipController::class, 'update'])->name('cs.penitip.update');
     Route::delete('/penitip/{id}', [CSPenitipController::class, 'destroy'])->name('cs.penitip.destroy');
+    Route::get('/konfirmasi-transfer', [\App\Http\Controllers\CS\CSKonfirmasiController::class, 'index'])
+        ->name('cs.konfirmasi.index');
+    Route::post('/konfirmasi-transfer/{id}', [\App\Http\Controllers\CS\CSKonfirmasiController::class, 'updateStatus'])
+        ->name('cs.konfirmasi.update');
+    Route::get('/barang-diproses', [\App\Http\Controllers\CS\CSProsesBarangController::class, 'index'])
+        ->name('cs.barang.diproses');
+
+    Route::get('/barang-diproses/{id}', [\App\Http\Controllers\CS\CSProsesBarangController::class, 'show'])
+        ->name('cs.barang.diproses.detail');
+
+    Route::post('/barang-diproses/{id}/selesaikan', [\App\Http\Controllers\CS\CSProsesBarangController::class, 'selesaikan'])
+        ->name('cs.barang.diproses.selesaikan');
 });
 Route::post('/penitip', [CSPenitipController::class, 'store'])->name('cs.penitip.store');
 Route::get('/barang/create', [CSBarangController::class, 'create'])->name('cs.barang.create');
@@ -213,6 +225,8 @@ Route::middleware('auth:pembeli')->group(function () {
     Route::get('/profil/edit', [ProfilController::class, 'edit'])->name('pembeli.profil.edit');
     Route::post('/profil/update', [ProfilController::class, 'update'])->name('pembeli.profil.update');
     Route::post('/profil/upload-foto', [ProfilController::class, 'uploadFoto'])->name('pembeli.profil.upload_foto');
+    Route::post('/pembeli/rating/{barang_id}', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'beriRating'])
+    ->name('pembeli.rating.submit');
 });
 
 Route::middleware(['auth:pembeli'])->prefix('pembeli/alamat')->name('pembeli.alamat.')->group(function () {

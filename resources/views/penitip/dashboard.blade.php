@@ -12,6 +12,12 @@
             <p><i class="fas fa-envelope mr-1"></i>Email✉️ : {{ $penitip->email }}</p>
             <p><i class="fas fa-phone mr-1"></i>No Telp☎️ : {{ $penitip->no_telp }}</p>
             <p class="text-lg">Saldo: Rp{{ number_format($penitip->saldo, 0, ',', '.') }}</p>
+            <p>Rating: 
+                @php
+                    $avg = round($penitip->averageRating(), 1);
+                @endphp
+                {{ $avg ?? '-' }} / 5
+            </p>
         </div>
     </div>
 

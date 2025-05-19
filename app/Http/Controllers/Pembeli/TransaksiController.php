@@ -12,6 +12,7 @@ use App\Models\AlamatPembeli;
 use App\Models\DetailTransaksi;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Rating;
 
 class TransaksiController extends Controller
 {
@@ -146,22 +147,19 @@ class TransaksiController extends Controller
             'bukti_transfer' => 'required|image|mimes:jpg,jpeg|max:2048',
         ]);
 
+        // Simpan ke storage/app/public/bukti_transfer
         $file = $request->file('bukti_transfer');
         $filename = 'bukti_' . $transaksi->id . '.jpg';
-        $folder = public_path('uploads/bukti-transfer');
 
-        if (!file_exists($folder)) {
-            mkdir($folder, 0775, true);
-        }
+        $path = $file->storeAs('bukti_transfer', $filename, 'public'); // simpan ke storage/app/public
 
-        $file->move($folder, $filename);
-
+        // Simpan path ke database (relatif dari public/storage/)
         $transaksi->update([
-            'bukti_transfer' => 'uploads/bukti-transfer/' . $filename,
+            'bukti_transfer' => $path, // contoh: "bukti_transfer/bukti_123.jpg"
             'status' => 'menunggu konfirmasi',
         ]);
 
-        return redirect()->route('dashboard.pembeli')->with('success', 'Bukti transfer berhasil diupload. Menunggu konfirmasi.');
+        return redirect('/')->with('success', 'Bukti transfer berhasil diupload. Menunggu konfirmasi.');
     }
 
     public function gagalBayar($id)
@@ -254,6 +252,37 @@ class TransaksiController extends Controller
                 ->setPaper('a4', 'portrait');
 
         return $pdf->stream("nota-transaksi-{$transaksi->id}.pdf");
+    }
+
+    public function beriRating(Request $request, $barang_id)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'transaksi_id' => 'required|exists:transaksis,id',
+            'penitip_id' => 'required|exists:penitips,id',
+        ]);
+
+        $pembeli = Auth::guard('pembeli')->user();
+
+        // Cek apakah sudah memberi rating
+        $existing = Rating::where('pembeli_id', $pembeli->id)
+            ->where('barang_id', $barang_id)
+            ->where('transaksi_id', $request->transaksi_id)
+            ->first();
+
+        if ($existing) {
+            return back()->with('error', 'Anda sudah memberi rating untuk barang ini.');
+        }
+
+        Rating::create([
+            'pembeli_id' => $pembeli->id,
+            'barang_id' => $barang_id,
+            'transaksi_id' => $request->transaksi_id,
+            'penitip_id' => $request->penitip_id,
+            'rating' => $request->rating,
+        ]);
+
+        return back()->with('success', 'Rating berhasil dikirim.');
     }
 
 }

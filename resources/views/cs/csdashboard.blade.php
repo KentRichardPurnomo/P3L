@@ -29,6 +29,16 @@
                 </span>
             @endif
         </a>
+
+        <a href="{{ route('cs.konfirmasi.index') }}"
+            class="block bg-green-600 text-white px-4 py-3 rounded hover:bg-green-700 text-center font-semibold">
+            ✅ Konfirmasi Bukti Transfer
+        </a>
+
+        <a href="{{ route('cs.barang.diproses') }}"
+            class="block bg-purple-600 text-white px-4 py-3 rounded hover:bg-purple-700 text-center font-semibold">
+            🚚 Barang Sedang Diproses
+        </a>
     </div>
 </div>
 @endsection

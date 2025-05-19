@@ -37,4 +37,14 @@ class Penitip extends Authenticatable
     {
         return $this->hasMany(Barang::class);
     }
+
+    public function ratings()
+    {
+        return $this->hasMany(\App\Models\Rating::class);
+    }
+
+    public function averageRating()
+    {
+        return $this->ratings()->avg('rating');
+    }
 }

@@ -36,4 +36,9 @@ class Transaksi extends Model
     {
         return $this->belongsTo(AlamatPembeli::class, 'alamat_pengiriman_id');
     }
+
+    public function ratings()
+    {
+        return $this->hasMany(\App\Models\Rating::class);
+    }
 }

@@ -58,6 +58,11 @@ class Barang extends Model
     {
         return $this->belongsTo(\App\Models\Pegawai::class, 'quality_check');
     }
+
+    public function ratings()
+    {
+        return $this->hasMany(\App\Models\Rating::class);
+    }
 }
 
 

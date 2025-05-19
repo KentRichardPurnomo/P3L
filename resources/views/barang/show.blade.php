@@ -45,6 +45,25 @@
             <p class="mb-2"><strong>Deskripsi:</strong></p>
             <p class="text-sm text-gray-700 mb-4">{{ $barang->deskripsi }}</p>
 
+            <!-- TAMBAHAN: Nama Penitip & Rating -->
+            @php
+                $penitip = $barang->penitip;
+                $avgRating = round($penitip->averageRating(), 1);
+            @endphp
+
+            <p class="mb-2"><strong>Penitip:</strong> {{ $penitip->username }}</p>
+            <p class="mb-4">
+                <strong>Rating Penitip:</strong>
+                @if ($avgRating > 0)
+                    <span class="text-yellow-500">
+                        {{ str_repeat('★', floor($avgRating)) }}{{ $avgRating < 5 ? str_repeat('☆', 5 - floor($avgRating)) : '' }}
+                    </span>
+                    <span class="text-sm text-gray-600">({{ $avgRating }} / 5)</span>
+                @else
+                    <span class="text-sm text-gray-500">Belum ada rating</span>
+                @endif
+            </p>
+
             <p><strong>Garansi:</strong>
                 @if ($barang->garansi_berlaku_hingga && $barang->garansi_berlaku_hingga->isFuture())
                     Ada (aktif hingga {{ $barang->garansi_berlaku_hingga->translatedFormat('d F Y') }})
