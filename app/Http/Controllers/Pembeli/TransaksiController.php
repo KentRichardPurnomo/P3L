@@ -12,6 +12,7 @@ use App\Models\AlamatPembeli;
 use App\Models\DetailTransaksi;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Rating;
 
 class TransaksiController extends Controller
 {
@@ -106,8 +107,11 @@ class TransaksiController extends Controller
                 'subtotal' => $barang->harga,
             ]);
 
-            // Update barang terjual
-            $barang->update(['terjual' => 1]);
+            // Update barang terjual dan simpan transaksi_id
+            $barang->update([
+                'terjual' => 1,
+                'transaksi_id' => $transaksi->id,
+            ]);
 
             // Hitung poin reward
             $poin = floor($barang->harga / 10000);
@@ -117,6 +121,7 @@ class TransaksiController extends Controller
             }
             $poinBaru += $poin;
         }
+
 
         // Update poin pembeli
         $pembeli->poin = max(0, $pembeli->poin - $poinDitukar + $poinBaru);
@@ -146,22 +151,19 @@ class TransaksiController extends Controller
             'bukti_transfer' => 'required|image|mimes:jpg,jpeg|max:2048',
         ]);
 
+        // Simpan ke storage/app/public/bukti_transfer
         $file = $request->file('bukti_transfer');
         $filename = 'bukti_' . $transaksi->id . '.jpg';
-        $folder = public_path('uploads/bukti-transfer');
 
-        if (!file_exists($folder)) {
-            mkdir($folder, 0775, true);
-        }
+        $path = $file->storeAs('bukti_transfer', $filename, 'public'); // simpan ke storage/app/public
 
-        $file->move($folder, $filename);
-
+        // Simpan path ke database (relatif dari public/storage/)
         $transaksi->update([
-            'bukti_transfer' => 'uploads/bukti-transfer/' . $filename,
+            'bukti_transfer' => $path, // contoh: "bukti_transfer/bukti_123.jpg"
             'status' => 'menunggu konfirmasi',
         ]);
 
-        return redirect()->route('dashboard.pembeli')->with('success', 'Bukti transfer berhasil diupload. Menunggu konfirmasi.');
+        return redirect('/')->with('success', 'Bukti transfer berhasil diupload. Menunggu konfirmasi.');
     }
 
     public function gagalBayar($id)
@@ -231,14 +233,16 @@ class TransaksiController extends Controller
 
     public function detail($id)
     {
+        $transaksi = Transaksi::with(['detail.barang', 'alamat'])->findOrFail($id);
         $pembeli = Auth::guard('pembeli')->user();
 
-        $transaksi = \App\Models\Transaksi::with(['detail.barang', 'alamat'])
-            ->where('id', $id)
-            ->where('pembeli_id', $pembeli->id)
-            ->firstOrFail();
+        // Ambil semua rating untuk transaksi ini oleh pembeli ini
+        $ratings = \App\Models\Rating::where('pembeli_id', $pembeli->id)
+            ->where('transaksi_id', $transaksi->id)
+            ->get()
+            ->keyBy('barang_id'); // supaya bisa diakses langsung pakai barang_id
 
-        return view('pembeli.riwayatdetail', compact('transaksi'));
+        return view('pembeli.riwayatdetail', compact('transaksi', 'ratings'));
     }
 
     public function cetakNota($id)
@@ -254,6 +258,38 @@ class TransaksiController extends Controller
                 ->setPaper('a4', 'portrait');
 
         return $pdf->stream("nota-transaksi-{$transaksi->id}.pdf");
+    }
+
+    public function beriRating(Request $request, $barang_id)
+    {
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'transaksi_id' => 'required|exists:transaksis,id',
+            'penitip_id' => 'required|exists:penitips,id',
+        ]);
+
+        $pembeli = Auth::guard('pembeli')->user();
+
+        // Cek apakah sudah memberi rating
+        $existing = Rating::where('pembeli_id', $pembeli->id)
+            ->where('barang_id', $barang_id)
+            ->where('transaksi_id', $request->transaksi_id)
+            ->first();
+
+        if ($existing) {
+            return back()->with('error', 'Anda sudah memberi rating untuk barang ini.');
+        }
+
+        Rating::create([
+            'pembeli_id' => $pembeli->id,
+            'barang_id' => $barang_id,
+            'transaksi_id' => $request->transaksi_id,
+            'penitip_id' => $request->penitip_id,
+            'rating' => $request->rating,
+        ]);
+
+        return redirect()->route('pembeli.transaksi.detail', $request->transaksi_id)
+            ->with('success', 'Rating berhasil dikirim.');
     }
 
 }

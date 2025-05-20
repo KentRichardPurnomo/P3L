@@ -8,8 +8,13 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Barang;
 use App\Models\Kategori;
 use App\Models\Penitip;
+use App\Models\Transaksi;
+use App\Models\Pegawai;
+use App\Models\JadwalPengiriman;
 use Illuminate\Support\Facades\File;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 class BarangGudangController extends Controller
 {
@@ -202,4 +207,134 @@ class BarangGudangController extends Controller
 
         return redirect()->route('gudang.barang.index')->with('success', 'Barang berhasil dihapus.');
     }
+
+       public function formPengambilan($id)
+    {
+        $barang = Barang::findOrFail($id);
+
+        // Validasi bahwa barang sudah dikonfirmasi akan diambil oleh penitip
+        if ($barang->status_pengambilan !== 'dikonfirmasi') {
+            return redirect()->route('gudang.barang.index')->with('error', 'Barang belum dikonfirmasi untuk diambil oleh penitip.');
+        }
+
+        return view('gudang.barang.form_ambil', compact('barang'));
+    }
+
+    public function simpanPengambilan(Request $request, $id)
+    {
+        $barang = Barang::findOrFail($id);
+
+        // Set status sebagai sudah diambil kembali (misal status = 1)
+        $barang->diambil_kembali = 1; // diambil kembali
+        $barang->tanggal_diambil_kembali = Carbon::now();
+        $barang->save();
+
+        return redirect()->route('gudang.barang.index')->with('success', 'Barang telah dicatat sebagai sudah diambil.');
+    }
+
+    public function catatPengambilan($id)
+    {
+        $barang = Barang::findOrFail($id);
+
+        // Cek dulu apakah status_pengambilan sudah 1 dan status masih 0
+        if ($barang->status_pengambilan == 1 && $barang->diambil_kembali == 0) {
+            $barang->diambil_kembali = 1; // sudah diambil
+            $barang->tanggal_diambil_kembali = now();
+            $barang->save();
+
+            return redirect()->route('gudang.barang.index')->with('success', 'Pengambilan barang berhasil dicatat.');
+        }
+
+        return redirect()->route('gudang.barang.index')->with('error', 'Barang tidak dapat dicatat pengambilannya.');
+    }
+
+        public function transaksi()
+    {
+        $pegawai = Auth::guard('pegawai')->user();
+
+        // Barang yang harus dikirim
+        $barangKirim = Barang::with(['transaksi.pembeli'])
+            ->where('quality_check', $pegawai->id)
+            ->whereHas('transaksi', function ($query) {
+                $query->where('tipe_pengiriman', 'kirim');
+            })
+            ->get();
+
+        // Barang yang harus diambil
+        $barangAmbil = Barang::with(['transaksi.pembeli'])
+            ->where('quality_check', $pegawai->id)
+            ->whereHas('transaksi', function ($query) {
+                $query->where('tipe_pengiriman', 'ambil');
+            })
+            ->get();
+
+        return view('gudang.barangtransaksi', compact('barangKirim', 'barangAmbil'));
+    }
+
+    public function formJadwalKirim($id)
+    {
+        $barang = Barang::with(['transaksi', 'jadwalPengirimen.pegawai'])->findOrFail($id);
+        $pegawais = Pegawai::whereHas('jabatan', function($q) {
+            $q->where('nama_jabatan', 'Kurir');
+        })->get();
+
+        $jadwal = $barang->jadwalPengirimen; // relasi satu-satu
+
+        return view('gudang.jadwal-kirim', compact('barang', 'pegawais', 'jadwal'));
+    }
+
+
+     public function simpanJadwalKirim(Request $request, $id)
+    {
+        $request->validate([
+            'jadwal_kirim' => 'required|date',
+            'pegawai_id' => 'required|exists:pegawais,id',
+        ]);
+
+        $barang = Barang::with('transaksi')->findOrFail($id);
+
+        // Validasi waktu
+        $jadwalTanggal = \Carbon\Carbon::parse($request->jadwal_kirim)->format('Y-m-d');
+        $jadwalJam = \Carbon\Carbon::parse($request->jadwal_kirim)->format('H:i');
+        $hariIni = now()->format('Y-m-d');
+
+        if ($jadwalTanggal == $hariIni && $jadwalJam > '16:00') {
+            return back()->with('error', 'Tidak bisa dijadwalkan di hari yang sama setelah jam 16:00.');
+        }
+
+        // Cek apakah sudah ada jadwal pengiriman untuk barang ini
+        $jadwal = JadwalPengiriman::where('barang_id', $barang->id)->first();
+
+        if ($jadwal) {
+            // Update jadwal yang sudah ada
+            $jadwal->update([
+                'pegawai_id' => $request->pegawai_id,
+                'jadwal_kirim' => $request->jadwal_kirim,
+            ]);
+        } else {
+            // Buat jadwal baru
+            JadwalPengiriman::create([
+                'barang_id' => $barang->id,
+                'pegawai_id' => $request->pegawai_id,
+                'jadwal_kirim' => $request->jadwal_kirim,
+            ]);
+        }
+
+        // Update status barang jika perlu
+        $barang->update(['status' => 'Sedang Dikirim']);
+
+        // Notifikasi bisa kamu implementasikan di sini sesuai kebutuhan
+
+        return redirect()->route('gudang.barang.transaksi')->with('success', 'Jadwal pengiriman berhasil disimpan.');
+    }
+
+    public function cetakNota($id)
+    {
+        $barang = Barang::with(['transaksi.pembeli', 'transaksi'])->findOrFail($id);
+        $pegawais = Pegawai::all();
+
+        $pdf = Pdf::loadView('gudang.nota-pdf', compact('barang','pegawais'));
+        return $pdf->download('nota_penjualan_barang_' . $barang->id . '.pdf');
+    }
+
 }

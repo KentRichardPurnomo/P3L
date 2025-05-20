@@ -46,4 +46,9 @@ class Pembeli extends Authenticatable
     {
         return $this->hasMany(Diskusi::class, 'user_id');
     }
+
+    public function ratings()
+    {
+        return $this->hasMany(\App\Models\Rating::class);
+    }
 }

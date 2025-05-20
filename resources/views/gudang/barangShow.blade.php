@@ -37,6 +37,20 @@
             <p><strong>Status:</strong> {{ $barang->terjual ? 'Sudah Terjual' : 'Tersedia' }}</p>
             <p><strong>Penitip:</strong> {{ $barang->penitip->username ?? '-' }}</p>
             <p><strong>Batas Waktu Titip:</strong> {{ \Carbon\Carbon::parse($barang->batas_waktu_titip)->translatedFormat('d F Y') }}</p>
+            <p><strong>Tanggal Diambil:</strong> 
+                @if($barang->tanggal_diambil_kembali)
+                    {{ \Carbon\Carbon::parse($barang->tanggal_diambil_kembali)->format('d M Y') }}
+                @else
+                    Tidak ada
+                @endif
+            </p>
+            <p><strong>Status Pengambilan:</strong>
+                @if ($barang->status_pengambilan == 1 && $barang->diambil_kembali == 1)
+                    Diambil Kembali
+                @else
+                    Belum diambil kembali
+                @endif
+            </p>
             <div class="mt-6 flex gap-4">
                 <a href="{{ route('gudang.barang.edit', $barang->id) }}"
                 class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">✏ Edit</a>

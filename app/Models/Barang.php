@@ -20,6 +20,11 @@ class Barang extends Model
         'quality_check',
         'terjual',
         'batas_waktu_titip',
+        'status_perpanjangan',
+        'status_pengambilan',
+        'diambil_kembali',
+        'tanggal_diambil_kembali',
+        'transaksi_id',
         'penitip_id',
     ];
 
@@ -58,6 +63,22 @@ class Barang extends Model
     {
         return $this->belongsTo(\App\Models\Pegawai::class, 'quality_check');
     }
+
+    public function ratings()
+    {
+        return $this->hasMany(\App\Models\Rating::class);
+    }
+
+    public function transaksi()
+    {
+        return $this->belongsTo(\App\Models\Transaksi::class, 'transaksi_id');
+    }
+
+    public function jadwalPengirimen()
+    {
+        return $this->hasOne(JadwalPengiriman::class);
+    }
+
 }
 
 

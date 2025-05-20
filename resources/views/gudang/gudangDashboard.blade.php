@@ -31,5 +31,12 @@
             📦 Lihat Daftar Semua Barang Titipan Anda
         </a>
     </div>
+
+    <div class="mt-6">
+        <a href="{{ route('gudang.barang.transaksi') }}"
+            class="block bg-yellow-500 text-white text-center py-3 rounded shadow hover:bg-yellow-600 transition">
+            📑 Lihat Daftar Transaksi Pengiriman
+        </a>
+    </div>
 </div>
 @endsection

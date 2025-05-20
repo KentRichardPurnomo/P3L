@@ -48,7 +48,7 @@
             
             <p><strong>Pengambilan:</strong>
                 @if (!$barang->status_pengambilan)
-                    Belum Diambil
+                    Belum Siap Diambil
                 @else
                     Siap Diambil
                 @endif

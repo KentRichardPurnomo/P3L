@@ -73,6 +73,18 @@ Route::prefix('cs')->middleware('auth:pegawai')->group(function () {
     Route::get('/penitip/{id}/edit', [CSPenitipController::class, 'edit'])->name('cs.penitip.edit');
     Route::put('/penitip/{id}', [CSPenitipController::class, 'update'])->name('cs.penitip.update');
     Route::delete('/penitip/{id}', [CSPenitipController::class, 'destroy'])->name('cs.penitip.destroy');
+    Route::get('/konfirmasi-transfer', [\App\Http\Controllers\CS\CSKonfirmasiController::class, 'index'])
+        ->name('cs.konfirmasi.index');
+    Route::post('/konfirmasi-transfer/{id}', [\App\Http\Controllers\CS\CSKonfirmasiController::class, 'updateStatus'])
+        ->name('cs.konfirmasi.update');
+    Route::get('/barang-diproses', [\App\Http\Controllers\CS\CSProsesBarangController::class, 'index'])
+        ->name('cs.barang.diproses');
+
+    Route::get('/barang-diproses/{id}', [\App\Http\Controllers\CS\CSProsesBarangController::class, 'show'])
+        ->name('cs.barang.diproses.detail');
+
+    Route::post('/barang-diproses/{id}/selesaikan', [\App\Http\Controllers\CS\CSProsesBarangController::class, 'selesaikan'])
+        ->name('cs.barang.diproses.selesaikan');
 });
 Route::post('/penitip', [CSPenitipController::class, 'store'])->name('cs.penitip.store');
 Route::get('/barang/create', [CSBarangController::class, 'create'])->name('cs.barang.create');
@@ -151,11 +163,21 @@ Route::middleware(['auth:pegawai'])->group(function () {
 Route::prefix('gudang')->middleware(['auth:pegawai'])->group(function () {
     Route::get('/barang/create', [BarangGudangController::class, 'create'])->name('gudang.barang.create');
     Route::get('/gudang/barang', [BarangGudangController::class, 'index'])->name('gudang.barang.index');
+    Route::get('/gudang/barang/transaksi', [BarangGudangController::class, 'transaksi'])->name('gudang.barang.transaksi');
+    
+    Route::get('/gudang/barang/{id}/ambil', [BarangGudangController::class, 'formPengambilan'])->name('gudang.barang.formAmbil');
+    Route::post('/gudang/barang/{id}/catat-pengambilan', [BarangGudangController::class, 'simpanPengambilan'])->name('gudang.barang.simpanPengambilan');
+
     Route::post('/gudang/barang', [BarangGudangController::class, 'store'])->name('gudang.barang.store');
     Route::get('/gudang/barang/{id}', [BarangGudangController::class, 'show'])->name('gudang.barang.show');
     Route::get('/gudang/barang/{id}/edit', [BarangGudangController::class, 'edit'])->name('gudang.barang.edit');
     Route::delete('/gudang/barang/{id}', [BarangGudangController::class, 'destroy'])->name('gudang.barang.destroy');
     Route::put('/gudang/barang/{id}', [BarangGudangController::class, 'update'])->name('gudang.barang.update');
+
+    Route::get('/gudang/barang/{id}/jadwal-kirim', [BarangGudangController::class, 'formJadwalKirim'])->name('gudang.barang.jadwal');
+    Route::post('/gudang/barang/{id}/jadwal-kirim', [BarangGudangController::class, 'simpanJadwalKirim'])->name('gudang.barang.simpanJadwal');
+    Route::get('/gudang/barang/{id}/cetak-nota', [BarangGudangController::class, 'cetakNota'])->name('gudang.barang.cetakNota');
+
 });
 
 
@@ -213,6 +235,8 @@ Route::middleware('auth:pembeli')->group(function () {
     Route::get('/profil/edit', [ProfilController::class, 'edit'])->name('pembeli.profil.edit');
     Route::post('/profil/update', [ProfilController::class, 'update'])->name('pembeli.profil.update');
     Route::post('/profil/upload-foto', [ProfilController::class, 'uploadFoto'])->name('pembeli.profil.upload_foto');
+    Route::post('/pembeli/rating/{barang_id}', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'beriRating'])
+    ->name('pembeli.rating.submit');
 });
 
 Route::middleware(['auth:pembeli'])->prefix('pembeli/alamat')->name('pembeli.alamat.')->group(function () {
@@ -271,9 +295,6 @@ Route::middleware('auth:penitip')->group(function () {
     Route::post('/penitip/barang/{id}/perpanjang', [\App\Http\Controllers\Penitip\BarangController::class, 'perpanjang'])->name('penitip.barang.perpanjang');
     Route::post('/penitip/barang/{id}/konfirmasi-pengambilan', [\App\Http\Controllers\Penitip\BarangController::class, 'konfirmasiPengambilan'])->name('penitip.barang.konfirmasi-pengambilan');
 });
-
-
-
 
 Route::middleware('auth:penitip')->prefix('penitip')->group(function () {
     Route::get('/profil/edit', [ProfilPenitipController::class, 'edit'])->name('penitip.profil.edit');
