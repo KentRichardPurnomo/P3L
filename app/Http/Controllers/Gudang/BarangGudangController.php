@@ -5,16 +5,24 @@ namespace App\Http\Controllers\Gudang;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use App\Models\Barang;
 use App\Models\Kategori;
+use App\Models\Pembeli;
 use App\Models\Penitip;
 use App\Models\Transaksi;
 use App\Models\Pegawai;
 use App\Models\JadwalPengiriman;
+use App\Models\JadwalPengambilan;
 use Illuminate\Support\Facades\File;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use App\Notifications\JadwalPengambilanDibuat;
+use App\Notifications\NotifikasiPengirimanDibuat;
+use App\Notifications\NotifikasiKePenitip;
+use App\Notifications\NotifikasiKeKurir;
+use App\Notifications\NotifikasiBarangSelesai;
 
 class BarangGudangController extends Controller
 {
@@ -253,7 +261,7 @@ class BarangGudangController extends Controller
         $pegawai = Auth::guard('pegawai')->user();
 
         // Barang yang harus dikirim
-        $barangKirim = Barang::with(['transaksi.pembeli'])
+        $barangKirim = Barang::with(['transaksi.pembeli', 'jadwalPengirimen'])
             ->where('quality_check', $pegawai->id)
             ->whereHas('transaksi', function ($query) {
                 $query->where('tipe_pengiriman', 'kirim');
@@ -261,15 +269,25 @@ class BarangGudangController extends Controller
             ->get();
 
         // Barang yang harus diambil
-        $barangAmbil = Barang::with(['transaksi.pembeli'])
+        $barangAmbil = Barang::with(['transaksi.pembeli', 'jadwalPengambilan'])
             ->where('quality_check', $pegawai->id)
             ->whereHas('transaksi', function ($query) {
                 $query->where('tipe_pengiriman', 'ambil');
             })
             ->get();
 
+        // Tambahkan status jadwal
+        foreach ($barangKirim as $barang) {
+            $barang->status_jadwal = $barang->jadwalPengirimen ? 'dikirim' : 'belum';
+        }
+
+        foreach ($barangAmbil as $barang) {
+            $barang->status_jadwal = $barang->jadwalPengambilan ? 'diambil' : 'belum';
+        }
+
         return view('gudang.barangtransaksi', compact('barangKirim', 'barangAmbil'));
     }
+
 
     public function formJadwalKirim($id)
     {
@@ -291,41 +309,36 @@ class BarangGudangController extends Controller
             'pegawai_id' => 'required|exists:pegawais,id',
         ]);
 
-        $barang = Barang::with('transaksi')->findOrFail($id);
+        $barang = Barang::with(['transaksi.pembeli', 'penitip'])->findOrFail($id);
 
-        // Validasi waktu
-        $jadwalTanggal = \Carbon\Carbon::parse($request->jadwal_kirim)->format('Y-m-d');
-        $jadwalJam = \Carbon\Carbon::parse($request->jadwal_kirim)->format('H:i');
-        $hariIni = now()->format('Y-m-d');
+        $jadwal = JadwalPengiriman::updateOrCreate(
+            ['barang_id' => $barang->id],
+            [
+                'jadwal_kirim' => $request->jadwal_kirim,
+                'pegawai_id' => $request->pegawai_id,
+            ]
+        );
 
-        if ($jadwalTanggal == $hariIni && $jadwalJam > '16:00') {
-            return back()->with('error', 'Tidak bisa dijadwalkan di hari yang sama setelah jam 16:00.');
+        // Reload relasi agar jadwal tersedia untuk notifikasi
+        $barang->load(['jadwalPengirimen', 'transaksi.pembeli', 'penitip']);
+
+        // Kirim notifikasi ke pembeli
+        if ($barang->transaksi && $barang->transaksi->pembeli) {
+            $barang->transaksi->pembeli->notify(new NotifikasiPengirimanDibuat($barang));
         }
 
-        // Cek apakah sudah ada jadwal pengiriman untuk barang ini
-        $jadwal = JadwalPengiriman::where('barang_id', $barang->id)->first();
-
-        if ($jadwal) {
-            // Update jadwal yang sudah ada
-            $jadwal->update([
-                'pegawai_id' => $request->pegawai_id,
-                'jadwal_kirim' => $request->jadwal_kirim,
-            ]);
-        } else {
-            // Buat jadwal baru
-            JadwalPengiriman::create([
-                'barang_id' => $barang->id,
-                'pegawai_id' => $request->pegawai_id,
-                'jadwal_kirim' => $request->jadwal_kirim,
-            ]);
+        // Kirim notifikasi ke penitip
+        if ($barang->penitip) {
+            $barang->penitip->notify(new NotifikasiKePenitip($barang));
         }
 
-        // Update status barang jika perlu
-        $barang->update(['status' => 'Sedang Dikirim']);
+        // Kirim notifikasi ke kurir
+        $kurir = Pegawai::find($request->pegawai_id);
+        if ($kurir) {
+            $kurir->notify(new NotifikasiKeKurir($barang));
+        }
 
-        // Notifikasi bisa kamu implementasikan di sini sesuai kebutuhan
-
-        return redirect()->route('gudang.barang.transaksi')->with('success', 'Jadwal pengiriman berhasil disimpan.');
+        return redirect()->route('gudang.barang.transaksi')->with('success', 'Jadwal pengiriman berhasil disimpan dan notifikasi telah dikirim.');
     }
 
     public function cetakNota($id)
@@ -337,4 +350,78 @@ class BarangGudangController extends Controller
         return $pdf->download('nota_penjualan_barang_' . $barang->id . '.pdf');
     }
 
+    public function formJadwalAmbil($id)
+    {
+        $barang = Barang::with('jadwalPengambilan')->findOrFail($id);
+        return view('gudang.jadwal-ambil', compact('barang'));
+    }
+
+    public function simpanJadwalAmbil(Request $request, $id)
+    {
+        $request->validate([
+            'jadwal_pengambilan' => 'required|date|after_or_equal:today',
+        ]);
+
+        // Memuat relasi transaksi.pembeli DAN penitip
+        $barang = Barang::with(['transaksi.pembeli', 'penitip'])->findOrFail($id);
+
+        $pembeli = $barang->transaksi->pembeli ?? null;
+        $penitip = $barang->penitip ?? null;
+
+        if (!$pembeli) {
+            return back()->with('error', 'Barang ini belum memiliki pembeli.');
+        }
+
+        JadwalPengambilan::updateOrCreate(
+            ['barang_id' => $barang->id],
+            [
+                'jadwal_pengambilan' => $request->jadwal_pengambilan,
+                'pembeli_id' => $pembeli->id,
+            ]
+        );
+
+        // Notifikasi ke pembeli
+        $pembeli->notify(new JadwalPengambilanDibuat($barang, $request->jadwal_pengambilan));
+
+        // Notifikasi ke penitip (jika ada)
+        if ($penitip) {
+            $penitip->notify(new JadwalPengambilanDibuat($barang, $request->jadwal_pengambilan));
+        }
+
+        return redirect()->route('gudang.barang.transaksi')->with('success', 'Jadwal pengambilan berhasil disimpan.');
+    }
+    public function cetakNotaPengambilan($id)
+    {
+        $barang = Barang::with(['transaksi.pembeli'])->findOrFail($id);
+
+        if (!$barang->transaksi || !$barang->transaksi->pembeli) {
+            return back()->with('error', 'Barang belum memiliki transaksi atau pembeli.');
+        }
+
+        $pdf = PDF::loadView('gudang.nota', compact('barang'));
+        return $pdf->download('nota_pengambilan_' . $barang->id . '.pdf');
+    }
+    public function konfirmasiPengambilan($id)
+    {
+        $barang = Barang::findOrFail($id);
+
+        // Update status barang
+        $barang->status = 'transaksi selesai';
+        $barang->save();
+
+        // Ambil penitip dan pembeli
+        $penitip = $barang->penitip;  // pastikan relasi penitip() sudah benar di model
+        $pembeli = $barang->transaksi->pembeli;  // pastikan relasi pembeli() juga ada
+
+        // Kirim notifikasi jika penitip dan pembeli ada
+        if ($penitip) {
+            $penitip->notify(new NotifikasiBarangSelesai($barang, 'penitip'));
+        }
+
+        if ($pembeli) {
+            $pembeli->notify(new NotifikasiBarangSelesai($barang, 'pembeli'));
+        }
+
+        return redirect()->back()->with('success', 'Pengambilan barang dikonfirmasi dan notifikasi telah dikirim.');
+    }
 }

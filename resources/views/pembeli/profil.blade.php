@@ -43,9 +43,35 @@
             Riwayat Pembelian
         </a>
     </div>
-    
+    {{-- Notifikasi --}}
+    <div class="bg-blue-50 border-l-4 border-blue-400 text-blue-700 p-4 rounded">
+        <div class="flex items-center justify-between mb-2">
+            <h2 class="text-lg font-semibold"><i class="fas fa-bell mr-2"></i>Notifikasi Terbaru</h2>
+            <form method="POST" action="{{ route('pembeli.notifikasi.baca-semua') }}">
+                @csrf
+                <button type="submit" class="text-xs text-blue-600 hover:underline">Tandai Semua Sudah Dibaca</button>
+            </form>
+        </div>
 
-
+        @if(auth('pembeli')->user()->unreadNotifications->isEmpty())
+            <p class="text-sm text-gray-600">Tidak ada notifikasi baru.</p>
+        @else
+            <ul class="space-y-2 text-sm">
+                @foreach(auth('pembeli')->user()->unreadNotifications as $notif)
+                    <li class="p-2 bg-white border rounded shadow-sm">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="font-medium text-gray-800">
+                                    {{ $notif->data['pesan'] ?? 'Ada notifikasi baru.' }}
+                                </p>
+                                <p class="text-xs text-gray-500">{{ $notif->created_at->diffForHumans() }}</p>
+                            </div>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+    </div>
 
 </div>
 @endsection

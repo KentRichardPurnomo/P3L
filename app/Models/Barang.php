@@ -79,6 +79,16 @@ class Barang extends Model
         return $this->hasOne(JadwalPengiriman::class);
     }
 
+    public function jadwalPengambilan()
+    {
+        return $this->hasOne(JadwalPengambilan::class, 'barang_id');
+    }
+
+    public function pembeli()
+    {
+        return $this->belongsTo(Pembeli::class, 'pembeli_id'); 
+    }
+    
 }
 
 

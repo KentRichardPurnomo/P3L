@@ -30,8 +30,13 @@
                         <div class="flex flex-col gap-1 mt-2">
                             <a href="{{ route('gudang.barang.jadwal', $barang->id) }}"
                                 class="text-sm text-blue-600 underline hover:text-blue-800">Kirim</a>
-                            <a href="{{ route('gudang.barang.cetakNota', $barang->id) }}"
-                                class="text-sm text-red-600 underline hover:text-red-800" target="_blank">Cetak Nota</a>
+
+                            @if($barang->status_jadwal == 'dikirim')
+                                <a href="{{ route('gudang.barang.cetakNota', $barang->id) }}"
+                                    class="text-sm text-red-600 underline hover:text-red-800" target="_blank">Cetak Nota</a>
+                            @else
+                                <span class="text-xs text-gray-400 italic">Jadwalkan dulu untuk mencetak nota</span>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -57,8 +62,23 @@
                         <p class="text-sm text-gray-700 mb-3">Status: Diambil</p>
                         
                         <div class="flex flex-col gap-1 mt-2">
-                            <a href="{{ route('gudang.barang.show', $barang->id) }}"
+                            <a href="{{ route('gudang.jadwal-ambil.form', $barang->id) }}"
                                 class="text-sm text-blue-600 underline hover:text-blue-800">Ambil</a>
+
+                            @if($barang->status_jadwal == 'diambil')
+                                <a href="{{ route('gudang.barang.notaPengambilan', $barang->id) }}"
+                                    class="text-sm text-red-600 underline hover:text-red-800" target="_blank">Cetak Nota</a>
+
+                                <form method="POST" action="{{ route('gudang.barang.konfirmasi', $barang->id) }}">
+                                    @csrf
+                                    <button class="text-sm bg-green-600 text-white px-3 py-1 mt-2 rounded hover:bg-green-700"
+                                        onclick="return confirm('Konfirmasi bahwa barang sudah diambil oleh pembeli?')">
+                                        Konfirmasi Pengambilan
+                                    </button>
+                                </form>
+                            @else
+                                <span class="text-xs text-gray-400 italic">Ambil dulu untuk cetak nota & konfirmasi</span>
+                            @endif
                         </div>
                     </div>
                 </div>

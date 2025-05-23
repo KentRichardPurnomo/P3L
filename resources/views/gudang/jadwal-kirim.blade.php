@@ -50,7 +50,10 @@
             </select>
         </div>
 
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Simpan Jadwal</button>
+        <div class="flex gap-2">
+            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Simpan Jadwal</button>
+            <a href="{{ route('gudang.barang.transaksi') }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Batal</a>
+        </div>
     </form>
 </div>
 @endsection

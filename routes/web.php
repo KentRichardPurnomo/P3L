@@ -177,6 +177,10 @@ Route::prefix('gudang')->middleware(['auth:pegawai'])->group(function () {
     Route::get('/gudang/barang/{id}/jadwal-kirim', [BarangGudangController::class, 'formJadwalKirim'])->name('gudang.barang.jadwal');
     Route::post('/gudang/barang/{id}/jadwal-kirim', [BarangGudangController::class, 'simpanJadwalKirim'])->name('gudang.barang.simpanJadwal');
     Route::get('/gudang/barang/{id}/cetak-nota', [BarangGudangController::class, 'cetakNota'])->name('gudang.barang.cetakNota');
+    Route::get('/gudang/atur-pengambilan-barang/{id}', [BarangGudangController::class, 'formJadwalAmbil'])->name('gudang.jadwal-ambil.form');
+    Route::post('/gudang/atur-pengambilan-barang/{id}', [BarangGudangController::class, 'simpanJadwalAmbil'])->name('gudang.jadwal-ambil.simpan');
+    Route::get('/gudang/barang/{id}/nota-pengambilan', [BarangGudangController::class, 'cetakNotaPengambilan'])->name('gudang.barang.notaPengambilan');
+    Route::post('/gudang/barang/{id}/konfirmasi-pengambilan', [BarangGudangController::class, 'konfirmasiPengambilan'])->name('gudang.barang.konfirmasi');
 
 });
 
@@ -284,6 +288,13 @@ Route::get('/pembeli/upload-bukti/{id}', [\App\Http\Controllers\Pembeli\Transaks
 Route::post('/pembeli/upload-bukti/{id}', [\App\Http\Controllers\Pembeli\TransaksiController::class, 'submitBuktiTransfer'])
     ->name('pembeli.transaksi.submitBukti');
 
+//notifikasi
+Route::post('/pembeli/notifikasi/baca-semua', function () {
+    auth('pembeli')->user()->unreadNotifications->markAsRead();
+    return back();
+})->name('pembeli.notifikasi.baca-semua');
+
+
 Route::middleware('auth:penitip')->group(function () {
     Route::get('/penitip/dashboard', [DashboardPenitipController::class, 'index'])->name('penitip.dashboard');
 });
@@ -311,6 +322,12 @@ Route::middleware('auth:penitip')->prefix('penitip')->group(function () {
     Route::get('/profil', [ProfilPenitipController::class, 'edit'])->name('penitip.profil.edit');
     Route::post('/profil', [ProfilPenitipController::class, 'update'])->name('penitip.profil.update');
 });
+// notifikasi 
+Route::post('/penitip/notifikasi/baca-semua', function () {
+    auth('penitip')->user()->unreadNotifications->markAsRead();
+    return back();
+})->name('penitip.notifikasi.baca-semua');
+
 
 Route::get('/barang/{id}', [BarangController::class, 'show'])->name('barang.show');
 
