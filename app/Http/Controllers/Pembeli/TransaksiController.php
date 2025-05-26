@@ -92,8 +92,9 @@ class TransaksiController extends Controller
             'total' => $totalAkhir,
             'status' => 'menunggu pembayaran',
             'deadline_pembayaran' => now()->addMinutes(15),
+            'jadwal_pengambilan_id' => null,
         ]);
-
+        
         $poinBaru = 0;
 
         // Simpan detail & update barang

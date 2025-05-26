@@ -13,6 +13,7 @@ class Barang extends Model
         'kategori_id',
         'nama',
         'deskripsi',
+        'status',
         'harga',
         'thumbnail',
         'foto_lain',

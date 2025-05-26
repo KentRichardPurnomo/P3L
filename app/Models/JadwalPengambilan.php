@@ -9,7 +9,7 @@ class JadwalPengambilan extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['pembeli_id', 'barang_id', 'jadwal_pengambilan'];
+    protected $fillable = ['pembeli_id', 'barang_id', 'jadwal_pengambilan','diambil_pada'];
 
     public function pembeli()
     {
@@ -20,6 +20,12 @@ class JadwalPengambilan extends Model
     {
         return $this->belongsTo(Barang::class, 'barang_id');
     }
+
+    public function transaksi()
+    {
+        return $this->hasOne(Transaksi::class);
+    }
+
 }
 
 

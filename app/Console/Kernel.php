@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('transaksi:batalkan-expired')->everyMinute();
+        $schedule->command('transaksi:cek-hangus')->everyMinute();
     }
 
     /**

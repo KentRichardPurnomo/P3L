@@ -362,7 +362,7 @@ class BarangGudangController extends Controller
             'jadwal_pengambilan' => 'required|date|after_or_equal:today',
         ]);
 
-        // Memuat relasi transaksi.pembeli DAN penitip
+        // Memuat relasi transaksi.pembeli dan penitip
         $barang = Barang::with(['transaksi.pembeli', 'penitip'])->findOrFail($id);
 
         $pembeli = $barang->transaksi->pembeli ?? null;
@@ -372,7 +372,8 @@ class BarangGudangController extends Controller
             return back()->with('error', 'Barang ini belum memiliki pembeli.');
         }
 
-        JadwalPengambilan::updateOrCreate(
+        // Membuat atau memperbarui jadwal pengambilan
+        $jadwal = JadwalPengambilan::updateOrCreate(
             ['barang_id' => $barang->id],
             [
                 'jadwal_pengambilan' => $request->jadwal_pengambilan,
@@ -380,16 +381,22 @@ class BarangGudangController extends Controller
             ]
         );
 
-        // Notifikasi ke pembeli
+        // Menetapkan jadwal_pengambilan_id pada transaksi
+        $transaksi = $barang->transaksi;
+        $transaksi->jadwal_pengambilan_id = $jadwal->id;
+        $transaksi->save();
+
+        // Mengirim notifikasi ke pembeli
         $pembeli->notify(new JadwalPengambilanDibuat($barang, $request->jadwal_pengambilan));
 
-        // Notifikasi ke penitip (jika ada)
+        // Mengirim notifikasi ke penitip (jika ada)
         if ($penitip) {
             $penitip->notify(new JadwalPengambilanDibuat($barang, $request->jadwal_pengambilan));
         }
 
         return redirect()->route('gudang.barang.transaksi')->with('success', 'Jadwal pengambilan berhasil disimpan.');
     }
+
     public function cetakNotaPengambilan($id)
     {
         $barang = Barang::with(['transaksi.pembeli'])->findOrFail($id);
@@ -409,9 +416,16 @@ class BarangGudangController extends Controller
         $barang->status = 'transaksi selesai';
         $barang->save();
 
+        // Ambil jadwal pengambilan dan isi diambil_pada
+        $jadwal = $barang->jadwalPengambilan;
+        if ($jadwal) {
+            $jadwal->diambil_pada = now(); // waktu sekarang
+            $jadwal->save();
+        }
+
         // Ambil penitip dan pembeli
-        $penitip = $barang->penitip;  // pastikan relasi penitip() sudah benar di model
-        $pembeli = $barang->transaksi->pembeli;  // pastikan relasi pembeli() juga ada
+        $penitip = $barang->penitip;
+        $pembeli = $barang->transaksi->pembeli ?? null; // gunakan null-safe untuk jaga-jaga
 
         // Kirim notifikasi jika penitip dan pembeli ada
         if ($penitip) {
@@ -424,4 +438,5 @@ class BarangGudangController extends Controller
 
         return redirect()->back()->with('success', 'Pengambilan barang dikonfirmasi dan notifikasi telah dikirim.');
     }
+
 }
