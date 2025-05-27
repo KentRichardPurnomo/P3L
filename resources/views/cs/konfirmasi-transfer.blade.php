@@ -33,7 +33,7 @@
                         <div class="text-right">
                             <p class="text-sm text-gray-500 mb-1"><strong>Bukti Transfer:</strong></p>
                             <a href="{{ asset('storage/' . $transaksi->bukti_transfer) }}" target="_blank"
-                            class="inline-block bg-blue-600 text-white text-sm px-4 py-2 rounded hover:bg-blue-700 transition">
+                                class="inline-block bg-blue-600 text-white text-sm px-4 py-2 rounded hover:bg-blue-700 transition">
                                 Lihat Bukti
                             </a>
                         </div>

@@ -28,7 +28,14 @@
     <div class="mt-6">
         <a href="{{ route('gudang.barang.index') }}"
         class="block bg-indigo-600 text-white text-center py-3 rounded shadow hover:bg-indigo-700 transition">
-            📦 Lihat Daftar Semua Barang Titipan Anda
+            📦 Lihat Daftar Semua Barang Titipan
+        </a>
+    </div>
+
+    <div class="mt-6">
+        <a href="{{ route('gudang.barang.transaksi') }}"
+            class="block bg-yellow-500 text-white text-center py-3 rounded shadow hover:bg-yellow-600 transition">
+            📑 Lihat Daftar Transaksi Pengiriman
         </a>
     </div>
 </div>

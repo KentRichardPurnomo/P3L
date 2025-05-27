@@ -20,6 +20,7 @@ class Transaksi extends Model
         'potongan',
         'bukti_transfer',
         'deadline_pembayaran',
+        'jadwal_pengambilan_id'
     ];
 
     public function pembeli()
@@ -41,4 +42,20 @@ class Transaksi extends Model
     {
         return $this->hasMany(\App\Models\Rating::class);
     }
+
+    public function barangs()
+    {
+        return $this->hasMany(\App\Model\Barang::class);
+    }
+
+    public function pegawai()
+    {
+        return $this->belongsTo(Pegawai::class);
+    }
+
+    public function jadwalPengambilan()
+    {
+        return $this->belongsTo(JadwalPengambilan::class, 'jadwal_pengambilan_id');
+    }
+
 }

@@ -51,4 +51,10 @@ class Pembeli extends Authenticatable
     {
         return $this->hasMany(\App\Models\Rating::class);
     }
+
+    public function jadwalPengambilan()
+    {
+        return $this->hasMany(JadwalPengambilan::class, 'pembeli_id');
+    }
+
 }

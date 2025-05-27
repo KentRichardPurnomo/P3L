@@ -35,8 +35,17 @@
                     <p class="text-sm text-gray-700 mb-1">Harga: Rp{{ number_format($barang->harga, 0, ',', '.') }}</p>
                     <p class="text-xs text-gray-500 mb-2">Kategori: {{ $barang->kategori->nama ?? '-' }}</p>
 
-                    <a href="{{ route('gudang.barang.show', $barang->id) }}"
-                    class="inline-block text-sm text-blue-600 underline hover:text-blue-800">Lihat Detail</a>
+                    <div class="flex flex-col gap-1">
+                        <a href="{{ route('gudang.barang.show', $barang->id) }}"
+                            class="text-sm text-blue-600 underline hover:text-blue-800">Lihat Detail</a>
+
+                        @if ($barang->status_pengambilan == 1 && $barang->diambil_kembali == 0)
+                            <form action="{{ route('gudang.barang.simpanPengambilan', $barang->id) }}" method="POST">
+                                @csrf
+                                <button type="submit" class="text-sm text-red-600 underline hover:text-red-800">Catat Pengambilan</button>
+                            </form>
+                        @endif
+                    </div>
                 </div>
             </div>
         @endforeach

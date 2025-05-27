@@ -92,8 +92,9 @@ class TransaksiController extends Controller
             'total' => $totalAkhir,
             'status' => 'menunggu pembayaran',
             'deadline_pembayaran' => now()->addMinutes(15),
+            'jadwal_pengambilan_id' => null,
         ]);
-
+        
         $poinBaru = 0;
 
         // Simpan detail & update barang
@@ -107,8 +108,11 @@ class TransaksiController extends Controller
                 'subtotal' => $barang->harga,
             ]);
 
-            // Update barang terjual
-            $barang->update(['terjual' => 1]);
+            // Update barang terjual dan simpan transaksi_id
+            $barang->update([
+                'terjual' => 1,
+                'transaksi_id' => $transaksi->id,
+            ]);
 
             // Hitung poin reward
             $poin = floor($barang->harga / 10000);
@@ -118,6 +122,7 @@ class TransaksiController extends Controller
             }
             $poinBaru += $poin;
         }
+
 
         // Update poin pembeli
         $pembeli->poin = max(0, $pembeli->poin - $poinDitukar + $poinBaru);
@@ -229,14 +234,16 @@ class TransaksiController extends Controller
 
     public function detail($id)
     {
+        $transaksi = Transaksi::with(['detail.barang', 'alamat'])->findOrFail($id);
         $pembeli = Auth::guard('pembeli')->user();
 
-        $transaksi = \App\Models\Transaksi::with(['detail.barang', 'alamat'])
-            ->where('id', $id)
-            ->where('pembeli_id', $pembeli->id)
-            ->firstOrFail();
+        // Ambil semua rating untuk transaksi ini oleh pembeli ini
+        $ratings = \App\Models\Rating::where('pembeli_id', $pembeli->id)
+            ->where('transaksi_id', $transaksi->id)
+            ->get()
+            ->keyBy('barang_id'); // supaya bisa diakses langsung pakai barang_id
 
-        return view('pembeli.riwayatdetail', compact('transaksi'));
+        return view('pembeli.riwayatdetail', compact('transaksi', 'ratings'));
     }
 
     public function cetakNota($id)
@@ -282,7 +289,8 @@ class TransaksiController extends Controller
             'rating' => $request->rating,
         ]);
 
-        return back()->with('success', 'Rating berhasil dikirim.');
+        return redirect()->route('pembeli.transaksi.detail', $request->transaksi_id)
+            ->with('success', 'Rating berhasil dikirim.');
     }
 
 }

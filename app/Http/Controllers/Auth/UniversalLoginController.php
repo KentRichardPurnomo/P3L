@@ -10,6 +10,7 @@ use App\Models\Pembeli;
 use App\Models\Penitip;
 use App\Models\Organisasi;
 use App\Models\Pegawai;
+use App\Models\Hunter;
 
 class UniversalLoginController extends Controller
 {
@@ -54,6 +55,13 @@ class UniversalLoginController extends Controller
         if ($owner && Hash::check($password, $owner->password)) {
             Auth::guard('owner')->login($owner);
             return redirect()->route('owner.dashboard')->with('success', 'Berhasil login sebagai owner');
+        }
+
+        // ✅ Cek Hunter
+        $hunter = \App\Models\Hunter::where('username', $username)->first();
+        if ($hunter && Hash::check($password, $hunter->password)) {
+            Auth::guard('hunter')->login($hunter);
+            return redirect()->route('hunter.dashboard')->with('success', 'Berhasil login sebagai hunter');
         }
 
         // ✅ Cek Pegawai

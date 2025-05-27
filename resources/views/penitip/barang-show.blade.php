@@ -35,14 +35,22 @@
         <div class="md:w-1/2 space-y-3">
             <p><strong>Harga:</strong> Rp {{ number_format($barang->harga, 0, ',', '.') }}</p>
             <p><strong>Kategori:</strong> {{ $barang->kategori->nama }}</p>
-            <p><strong>Deskripsi:</strong></p>
-            <p class="text-gray-700">{{ $barang->deskripsi }}</p>
+            <p><strong>Deskripsi:</strong> {{ $barang->deskripsi }} </p>
+            <p><strong>Massa Titip:</strong> {{ \Carbon\Carbon::parse($barang->batas_waktu_titip)->format('d-m-Y') }}</p>
 
             <p><strong>Garansi:</strong>
                 @if($barang->garansi && $barang->garansi_berlaku_hingga && \Carbon\Carbon::now()->lt($barang->garansi_berlaku_hingga))
                     Aktif hingga {{ \Carbon\Carbon::parse($barang->garansi_berlaku_hingga)->format('d M Y') }}
                 @else
                     Tidak ada
+                @endif
+            </p>
+            
+            <p><strong>Pengambilan:</strong>
+                @if (!$barang->status_pengambilan)
+                    Belum Siap Diambil
+                @else
+                    Siap Diambil
                 @endif
             </p>
 

@@ -4,13 +4,40 @@ namespace App\Http\Controllers\Penitip;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Barang;
 use App\Models\Pembeli;
 use App\Models\Transaksi;
 use App\Models\DetailTransaksi;
+use Carbon\Carbon;
 
 class BarangController extends Controller
 {
+        public function index(Request $request)
+    {
+        $penitip = Auth::guard('penitip')->user();
+        $keyword = $request->input('cari'); // Ambil keyword dari input cari
+
+        // Barang yang belum terjual (aktif)
+        $barangAktifQuery = \App\Models\Barang::where('penitip_id', $penitip->id)
+                            ->where('terjual', false);
+
+        // Jika ada keyword pencarian
+        if ($keyword) {
+            $barangAktifQuery->where('nama', 'like', '%' . $keyword . '%');
+        }
+
+        $barangAktif = $barangAktifQuery->paginate(6)->withQueryString();
+
+        // Barang yang sudah terjual
+        $barangTerjual = \App\Models\Barang::where('penitip_id', $penitip->id)
+                            ->where('terjual', true)
+                            ->paginate(6);
+
+        return view('penitip.dashboard', compact('penitip', 'barangAktif', 'barangTerjual'));
+    }
+
+
     public function store(Request $request)
     {
         $request->validate([
@@ -71,4 +98,36 @@ class BarangController extends Controller
 
         return view('penitip.penitip_riwayat', compact('barang', 'pembeli', 'poinPembeli', 'komisi'));
     }
+
+    public function perpanjang($id)
+    {
+        $barang = Barang::findOrFail($id);
+
+        if (!$barang->status_perpanjangan) {
+            $barang->batas_waktu_titip = Carbon::parse($barang->batas_waktu_titip)->addDays(30);
+            $barang->status_perpanjangan = true;
+            $barang->save();
+
+            return redirect()->back()->with('success', 'Masa penitipan berhasil diperpanjang 30 hari.');
+        }
+
+        return redirect()->back()->with('info', 'Barang ini sudah diperpanjang sebelumnya.');
+    }
+
+    public function konfirmasiPengambilan($id)
+    {
+        $barang = Barang::findOrFail($id);
+
+        // Pastikan hanya pemilik yang bisa konfirmasi
+        if ($barang->penitip_id !== Auth::guard('penitip')->id()) {
+            abort(403, 'Anda tidak bisa mengambil barang ini.');
+        }
+
+        // Set status pengambilan menjadi true
+        $barang->status_pengambilan = true;
+        $barang->save();
+
+        return redirect()->back()->with('success', 'Konfirmasi pengambilan barang berhasil dikirim.');
+    }
+
 }

@@ -13,6 +13,7 @@ class Barang extends Model
         'kategori_id',
         'nama',
         'deskripsi',
+        'status',
         'harga',
         'thumbnail',
         'foto_lain',
@@ -20,6 +21,11 @@ class Barang extends Model
         'quality_check',
         'terjual',
         'batas_waktu_titip',
+        'status_perpanjangan',
+        'status_pengambilan',
+        'diambil_kembali',
+        'tanggal_diambil_kembali',
+        'transaksi_id',
         'penitip_id',
     ];
 
@@ -63,6 +69,27 @@ class Barang extends Model
     {
         return $this->hasMany(\App\Models\Rating::class);
     }
+
+    public function transaksi()
+    {
+        return $this->belongsTo(\App\Models\Transaksi::class, 'transaksi_id');
+    }
+
+    public function jadwalPengirimen()
+    {
+        return $this->hasOne(JadwalPengiriman::class);
+    }
+
+    public function jadwalPengambilan()
+    {
+        return $this->hasOne(JadwalPengambilan::class, 'barang_id');
+    }
+
+    public function pembeli()
+    {
+        return $this->belongsTo(Pembeli::class, 'pembeli_id'); 
+    }
+    
 }
 
 
