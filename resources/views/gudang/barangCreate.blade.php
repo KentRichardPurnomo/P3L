@@ -71,6 +71,11 @@
             @enderror
         </div>
 
+        <div class="mb-3">
+            <label>Berat Barang (kg)</label>
+            <input type="number" step="0.01" name="berat" class="w-full border rounded p-2" required>
+        </div>
+
         <div class="mb-4">
             <label class="block font-semibold mb-2">Thumbnail</label>
             <label for="thumbnailInput" class="cursor-pointer inline-block bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">

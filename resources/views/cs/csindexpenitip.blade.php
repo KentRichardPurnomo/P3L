@@ -27,6 +27,7 @@
                 <th class="p-2 border">Username</th>
                 <th class="p-2 border">Email</th>
                 <th class="p-2 border">No Telp</th>
+                <th class="p-2 border">Alamat</th>
                 <th class="p-2 border">No KTP</th>
                 <th class="p-2 border">Foto KTP</th>
                 <th class="p-2 border text-center">Aksi</th>
@@ -38,6 +39,7 @@
                     <td class="p-2 border">{{ $penitip->username }}</td>
                     <td class="p-2 border">{{ $penitip->email }}</td>
                     <td class="p-2 border">{{ $penitip->no_telp }}</td>
+                    <td class="p-2 border">{{ $penitip->alamat }}</td>
                     <td class="p-2 border">{{ $penitip->no_ktp }}</td>
                     <td class="p-2 border">
                         @if($penitip->foto_ktp)

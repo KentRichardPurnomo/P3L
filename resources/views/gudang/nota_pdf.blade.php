@@ -5,81 +5,72 @@
     <title>Nota Penitipan Barang</title>
     <style>
         body { font-family: sans-serif; font-size: 12px; margin: 20px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .section { margin-bottom: 15px; }
-        .label { font-weight: bold; width: 160px; display: inline-block; vertical-align: top; }
-        .value { display: inline-block; }
-        .images-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
+        .header { text-align: center; font-size: 14px; margin-bottom: 10px; }
+        .info-box {
+            border: 1px solid #000;
+            padding: 10px;
         }
-        .images-row img {
-            width: 30%;
-            max-height: 120px;
-            object-fit: cover;
-            border: 1px solid #ccc;
-            padding: 3px;
-            border-radius: 4px;
-        }
-        .thumbnail img {
-            max-height: 160px;
-            border: 1px solid #ccc;
-            padding: 5px;
-            border-radius: 4px;
-        }
-        hr {
-            margin: 15px 0;
-        }
+        .row { margin-bottom: 5px; }
+        .label { display: inline-block; width: 160px; font-weight: bold; }
+        .right-align { float: right; }
+        .bold { font-weight: bold; }
+        pre { white-space: pre-line; margin: 0; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>Nota Penitipan Barang</h2>
-        <p>ReuseMart - Pegawai Gudang</p>
-        <hr>
+<div class="header">
+    <h3>Nota Penitipan Barang</h3>
+</div>
+
+<div class="info-box">
+    <div class="bold">ReUse Mart</div>
+    <div>Jl. Green Eco Park No. 456 Yogyakarta</div>
+    <hr>
+
+    @php
+        $created = $barang->created_at ?? now();
+        $transaksiId = $barang->transaksi_id ?? $barang->id;
+        $kodeTransaksi = $created->format('y.m') . '.' . $transaksiId;
+    @endphp
+
+    <div class="row"><span class="label">No Nota</span>: {{ $kodeTransaksi }}</div>
+    <div class="row"><span class="label">Tanggal penitipan</span>: {{ $barang->created_at->format('d/m/Y H:i:s') }}</div>
+    <div class="row"><span class="label">Masa penitipan sampai</span>: {{ $barang->batas_waktu_titip->format('d/m/Y') }}</div>
+
+    {{-- PENITIP --}}
+    @php
+        $penitip = $barang->penitip;
+    @endphp
+
+    <div class="row" style="margin-top: 10px;">
+        <span class="bold">Penitip :</span> T{{ $penitip->id }}/ {{ $penitip->username }}
+    </div>
+    <div class="row">{{ $penitip->alamat }}</div>
+
+    <hr>
+
+    {{-- BARANG --}}
+    <div class="row" style="display: flex; justify-content: space-between;">
+        <span>{{ $barang->nama }}</span>
+        <span>Rp{{ number_format($barang->harga, 0, ',', '.') }}</span>
     </div>
 
-    <div class="section">
-        <span class="label">Nama Barang:</span> <span class="value">{{ $barang->nama }}</span><br>
-        <span class="label">Kategori:</span> <span class="value">{{ $barang->kategori->nama ?? '-' }}</span><br>
-        <span class="label">Harga:</span> <span class="value">Rp{{ number_format($barang->harga, 0, ',', '.') }}</span><br>
-        <span class="label">Deskripsi:</span> <span class="value">{{ $barang->deskripsi }}</span>
-    </div>
+    @if ($barang->garansi_berlaku_hingga)
+        <div class="row">Garansi aktif hingga: {{ \Carbon\Carbon::parse($barang->garansi_berlaku_hingga)->format('d/m/Y') }}</div>
+    @endif
 
-    <div class="section">
-        <span class="label">Penitip:</span> <span class="value">{{ $barang->penitip->username }}</span><br>
-        <span class="label">Tanggal Titip:</span> <span class="value">{{ $barang->created_at->format('d M Y') }}</span><br>
-        <span class="label">Batas Titip:</span> <span class="value">{{ $barang->batas_waktu_titip->format('d M Y') }}</span><br>
-        <span class="label">Diterima oleh:</span> <span class="value">{{ $barang->qualityChecker->nama_lengkap ?? '-' }}</span>
-    </div>
+    @if ($barang->berat)
+        <div class="row">Berat barang: {{ $barang->berat }} kg</div>
+    @endif
 
-    <div class="section thumbnail">
-        <span class="label">Thumbnail Barang:</span><br>
-        <img src="{{ public_path('images/barang/' . $barang->id . '/' . $barang->thumbnail) }}" alt="Thumbnail">
+    <br><br>
+    <div class="row bold">Diterima dan QC oleh:</div>
+    <br>
+    <div>
+        P{{ $barang->qualityChecker->id ?? '-' }} – {{ $barang->qualityChecker->nama_lengkap ?? '-' }}
     </div>
-
-    <div class="section thumbnail">
-        <span class="label">Foto Lain:</span>
-    </div>
-
-    <div class="section">
-        @php
-            $fotoLain = json_decode($barang->foto_lain, true);
-        @endphp
-
-        @if (is_array($fotoLain) && count($fotoLain))
-            <div class="images-row">
-                @foreach ($fotoLain as $foto)
-                    <img src="{{ public_path('images/barang/' . $barang->id . '/' . $foto) }}" alt="Foto Lain">
-                @endforeach
-            </div>
-        @else
-            <p style="color: gray;">Tidak ada foto tambahan</p>
-        @endif
-    </div>
+</div>
 
 </body>
 </html>
