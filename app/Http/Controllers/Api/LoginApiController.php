@@ -32,12 +32,12 @@ class LoginApiController extends Controller
                     'id' => $pembeli->id,
                     'username' => $pembeli->username,
                     'nama_lengkap' => $pembeli->nama_lengkap,
-                    'token' => 'token-pembeli-' . $pembeli->id
+                    'token' => 'token-pembeli-'.$pembeli->id,
                 ]
             ]);
         }
 
-        // Cek Penitip
+        // Penitip
         $penitip = Penitip::where('username', $username)->first();
         if ($penitip && Hash::check($password, $penitip->password)) {
             return response()->json([
@@ -47,12 +47,12 @@ class LoginApiController extends Controller
                     'id' => $penitip->id,
                     'username' => $penitip->username,
                     'nama_lengkap' => $penitip->nama_lengkap,
-                    'token' => 'token-penitip-' . $penitip->id
+                    'token' => 'token-penitip-'.$penitip->id,
                 ]
             ]);
         }
 
-        // Cek Hunter
+        // Hunter
         $hunter = Hunter::where('username', $username)->first();
         if ($hunter && Hash::check($password, $hunter->password)) {
             return response()->json([
@@ -62,31 +62,30 @@ class LoginApiController extends Controller
                     'id' => $hunter->id,
                     'username' => $hunter->username,
                     'nama_lengkap' => $hunter->nama_lengkap,
-                    'token' => 'token-hunter-' . $hunter->id
+                    'token' => 'token-hunter-'.$hunter->id,
                 ]
             ]);
         }
 
-        // Cek Kurir (Pegawai)
+        // Pegawai Kurir
         $pegawai = Pegawai::where('username', $username)->first();
-        if ($pegawai && Hash::check($password, $pegawai->password)) {
-            if (strtolower($pegawai->jabatan->nama_jabatan) === 'kurir') {
-                return response()->json([
-                    'status' => 'success',
-                    'role' => 'kurir',
-                    'data' => [
-                        'id' => $pegawai->id,
-                        'username' => $pegawai->username,
-                        'nama_lengkap' => $pegawai->nama_lengkap,
-                        'token' => 'token-kurir-' . $pegawai->id
-                    ]
-                ]);
-            }
+        if ($pegawai && Hash::check($password, $pegawai->password) &&
+            strtolower($pegawai->jabatan->nama_jabatan) === 'kurir') {
+            return response()->json([
+                'status' => 'success',
+                'role' => 'kurir',
+                'data' => [
+                    'id' => $pegawai->id,
+                    'username' => $pegawai->username,
+                    'nama_lengkap' => $pegawai->nama_lengkap,
+                    'token' => 'token-kurir-'.$pegawai->id,
+                ]
+            ]);
         }
 
         return response()->json([
             'status' => 'error',
-            'message' => 'Login gagal. Username atau password salah.'
+            'message' => 'Username atau password salah'
         ], 401);
     }
 }

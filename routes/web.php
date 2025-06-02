@@ -38,6 +38,7 @@ use App\Http\Controllers\Gudang\GudangDashboardController;
 use App\Http\Controllers\Gudang\BarangGudangController;
 use App\Http\Controllers\HunterDashboardController;
 use App\Http\Controllers\AdminHunterController;
+use App\Services\FirebaseMessagingService;
 
 Route::get('/login', [LoginUniversalController::class, 'showLoginForm'])->name('login.universal');
 Route::post('/login', [LoginUniversalController::class, 'login'])->name('login.universal.submit');
@@ -305,6 +306,17 @@ Route::post('/pembeli/notifikasi/baca-semua', function () {
     auth('pembeli')->user()->unreadNotifications->markAsRead();
     return back();
 })->name('pembeli.notifikasi.baca-semua');
+
+Route::get('/kirim-tes-notifikasi', function () {
+    $token = ''; // <-- Ganti dengan token HP kamu
+    $title = '🎉 Notifikasi dari Laravel';
+    $body = 'Halo, ini notifikasi pertamamu dari ReuseMart!';
+
+    $firebase = new FirebaseMessagingService();
+    $firebase->sendToToken($token, $title, $body);
+
+    return '✅ Notifikasi berhasil dikirim!';
+});
 
 
 Route::middleware('auth:penitip')->group(function () {

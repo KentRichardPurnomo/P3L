@@ -23,6 +23,7 @@ class Penitip extends Authenticatable
         'plaintext_password',
         'poin',
         'saldo',
+        'fcm_token',
     ];
 
     protected $casts = [

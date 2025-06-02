@@ -5,63 +5,62 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\LoginApiController;
 use App\Models\Barang;
 use App\Models\Kategori;
+use App\Models\Penitip;
 
+// Login API
+Route::post('/login', [LoginApiController::class, 'login']);
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
-|
-*/
-//halaman Umum 5 barang terbaru
+// Produk Terbaru
 Route::get('/barang-terbaru', function () {
     return Barang::where('terjual', 0)
         ->latest()
         ->take(5)
         ->get()
-        ->map(function ($b) {
-            return [
-                'id' => $b->id,
-                'nama' => $b->nama,
-                'harga' => $b->harga,
-                'thumbnail' => url("images/barang/{$b->id}/{$b->id}.jpg"),
-            ];
-        });
+        ->map(fn($b) => [
+            'id' => $b->id,
+            'nama' => $b->nama,
+            'harga' => $b->harga,
+            'thumbnail' => url("images/barang/{$b->id}/{$b->id}.jpg"),
+        ]);
 });
 
-//kategori
-Route::get('/kategori', function () {
-    return Kategori::select('id', 'nama')->get();
+// 🔎 Pencarian
+Route::get('/barang/search', function (Request $request) {
+    $q = $request->query('q');
+
+    return Barang::where('terjual', 0)
+        ->where('nama', 'like', "%$q%")
+        ->latest()
+        ->get()
+        ->map(fn($b) => [
+            'id' => $b->id,
+            'nama' => $b->nama,
+            'harga' => $b->harga,
+            'thumbnail' => url("images/barang/{$b->id}/{$b->id}.jpg"),
+        ]);
 });
 
-//page list barang
+// Semua Barang (pagination)
 Route::get('/barang', function (Request $request) {
     $perPage = $request->per_page ?? 10;
 
     return Barang::where('terjual', 0)
         ->latest()
         ->paginate($perPage)
-        ->through(function ($b) {
-            return [
-                'id' => $b->id,
-                'nama' => $b->nama,
-                'harga' => $b->harga,
-                'thumbnail' => url("images/barang/{$b->id}/{$b->id}.jpg"),
-            ];
-        });
+        ->through(fn($b) => [
+            'id' => $b->id,
+            'nama' => $b->nama,
+            'harga' => $b->harga,
+            'thumbnail' => url("images/barang/{$b->id}/{$b->id}.jpg"),
+        ]);
 });
 
-//detail barang
+// Detail Barang
 Route::get('/barang/{id}', function ($id) {
-    $barang = \App\Models\Barang::with(['kategori', 'penitip'])->findOrFail($id);
-
+    $barang = Barang::with(['kategori', 'penitip'])->findOrFail($id);
     $fotoLain = json_decode($barang->foto_lain ?? '[]');
 
-    return response()->json([
+    return [
         'id' => $barang->id,
         'nama' => $barang->nama,
         'harga' => $barang->harga,
@@ -76,12 +75,29 @@ Route::get('/barang/{id}', function ($id) {
         ],
         'thumbnail' => url("images/barang/{$barang->id}/{$barang->id}.jpg"),
         'foto_lain' => collect($fotoLain)->map(fn($f) => url("images/barang/{$barang->id}/$f")),
-    ]);
+    ];
 });
 
-//rekomend barang lainnya di detail barang
+// Kategori
+Route::get('/kategori', fn () => Kategori::select('id', 'nama')->get());
+
+// Barang per Kategori
+Route::get('/kategori/{id}/barang', function ($id) {
+    return Barang::where('kategori_id', $id)
+        ->where('terjual', 0)
+        ->latest()
+        ->get()
+        ->map(fn($b) => [
+            'id' => $b->id,
+            'nama' => $b->nama,
+            'harga' => $b->harga,
+            'thumbnail' => url("images/barang/{$b->id}/{$b->id}.jpg"),
+        ]);
+});
+
+// Rekomendasi barang lain
 Route::get('/barang-rekomendasi/{kategori_id}/{exclude_id}', function ($kategori_id, $exclude_id) {
-    return \App\Models\Barang::where('kategori_id', $kategori_id)
+    return Barang::where('kategori_id', $kategori_id)
         ->where('id', '!=', $exclude_id)
         ->where('terjual', 0)
         ->latest()
@@ -91,13 +107,79 @@ Route::get('/barang-rekomendasi/{kategori_id}/{exclude_id}', function ($kategori
             'id' => $b->id,
             'nama' => $b->nama,
             'harga' => $b->harga,
-            'thumbnail' => url("images/barang/{$b->id}/{$b->id}.jpg")
+            'thumbnail' => url("images/barang/{$b->id}/{$b->id}.jpg"),
         ]);
 });
 
-
-Route::post('/login', [LoginApiController::class, 'login']);
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+//penitip
+Route::get('/penitip/{id}/profil', function ($id) {
+    $penitip = \App\Models\Penitip::findOrFail($id);
+    return [
+        'id' => $penitip->id,
+        'username' => $penitip->username,
+        'email' => $penitip->email,
+        'no_telp' => $penitip->no_telp,
+        'saldo' => (int) $penitip->saldo,
+        'profile_picture' => $penitip->profile_picture
+            ? asset('storage/' . $penitip->profile_picture)
+            : null,
+    ];
 });
+
+Route::post('/penitip/update-fcm-token', function (Request $request) {
+    $request->validate([
+        'id' => 'required|exists:penitips,id',
+        'token' => 'required|string'
+    ]);
+
+    $penitip = Penitip::find($request->id);
+    $penitip->fcm_token = $request->token;
+    $penitip->save();
+
+    return response()->json(['message' => 'Token updated'], 200);
+});
+
+//barang aktif penitip
+Route::get('/penitip/{id}/barang-aktif', function ($id) {
+    return \App\Models\Barang::where('penitip_id', $id)
+        ->where('terjual', 0)
+        ->with('kategori')
+        ->orderByDesc('created_at')
+        ->get()
+        ->map(fn($b) => [
+            'id' => $b->id,
+            'nama' => $b->nama,
+            'harga' => $b->harga,
+            'kategori' => $b->kategori->nama,
+            'status_perpanjangan' => $b->status_perpanjangan,
+            'status_pengambilan' => $b->status_pengambilan,
+            'batas_waktu_titip' => $b->batas_waktu_titip,
+            'thumbnail' => url("images/barang/{$b->id}/{$b->id}.jpg"),
+        ]);
+});
+
+//barang terjual penitip
+Route::get('/penitip/{id}/barang-terjual', function ($id) {
+    return \App\Models\Barang::where('penitip_id', $id)
+        ->where('terjual', 1)
+        ->orderByDesc('updated_at')
+        ->get()
+        ->map(fn($b) => [
+            'id' => $b->id,
+            'nama' => $b->nama,
+            'harga' => $b->harga,
+            'thumbnail' => url("images/barang/{$b->id}/{$b->id}.jpg"),
+        ]);
+});
+
+//notif dalam app penitip
+Route::get('/penitip/{id}/notifikasi', function ($id) {
+    $penitip = \App\Models\Penitip::findOrFail($id);
+    return $penitip->unreadNotifications->map(function ($n) {
+        return [
+            'pesan' => $n->data['pesan'] ?? 'Ada notifikasi baru.',
+            'created_at' => $n->created_at->diffForHumans()
+        ];
+    });
+});
+
