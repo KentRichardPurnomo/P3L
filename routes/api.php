@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\LoginApiController;
 use App\Models\Barang;
 use App\Models\Kategori;
 use App\Models\Penitip;
+use App\Models\Pembeli;
 
 // Login API
 Route::post('/login', [LoginApiController::class, 'login']);
@@ -183,3 +184,48 @@ Route::get('/penitip/{id}/notifikasi', function ($id) {
     });
 });
 
+// Profil Pembeli
+Route::get('/pembeli/{id}/profil', function ($id) {
+    $pembeli = Pembeli::with('defaultAlamat')->find($id);
+
+    if (!$pembeli) {
+        return response()->json(['message' => 'Pembeli tidak ditemukan'], 404);
+    }
+
+    return [
+        'id' => $pembeli->id,
+        'username' => $pembeli->username,   
+        'email' => $pembeli->email,
+        'no_telp' => $pembeli->no_telp,
+        'profile_picture' => $pembeli->profile_picture
+            ? asset('storage/' . $pembeli->profile_picture)
+            : null,
+        'alamat_utama' => optional($pembeli->defaultAlamat)->alamat,
+        'poin' => (int) $pembeli->poin,
+    ];
+});
+
+// Update FCM Token Pembeli
+Route::post('/pembeli/update-fcm-token', function (Request $request) {
+    $request->validate([
+        'id' => 'required|exists:pembelis,id',
+        'token' => 'required|string'
+    ]);
+
+    $pembeli = Pembeli::findOrFail($request->id);
+    $pembeli->fcm_token = $request->token;
+    $pembeli->save();
+
+    return response()->json(['message' => 'Token FCM berhasil diperbarui.'], 200);
+});
+
+// Notifikasi Pembeli
+Route::get('/pembeli/{id}/notifikasi', function ($id) {
+    $pembeli = Pembeli::findOrFail($id);
+    return $pembeli->unreadNotifications->map(function ($notif) {
+        return [
+            'pesan' => $notif->data['pesan'] ?? 'Ada notifikasi baru.',
+            'created_at' => $notif->created_at->diffForHumans()
+        ];
+    });
+});

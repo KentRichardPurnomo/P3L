@@ -87,5 +87,7 @@ class ProfilController extends Controller
 
         return view('pembeli.riwayatpembelian', compact('transaksis'));
     }
+
+    
     
 }

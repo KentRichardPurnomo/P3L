@@ -72,7 +72,7 @@
                 @endif
             </p>
 
-            <p><strong>Status:</strong> {{ $barang->terjual ? 'Sudah Terjual' : 'Tersedia' }}</p>
+            <p><strong>Status:</strong> {{ $barang->terjual ? 'Sold Out' : 'Tersedia' }}</p>
         </div>
 
         <!-- CARD AKSI -->

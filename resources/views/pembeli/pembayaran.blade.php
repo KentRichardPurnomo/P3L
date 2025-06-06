@@ -53,12 +53,15 @@
 
     {{-- Tukar Poin --}}
     <div class="mt-6">
-        <label class="font-semibold block mb-1">Tukar Poin (1 poin = Rp 10.000)</label>
+        <label class="font-semibold block mb-1">Tukar Poin (100 poin = Rp 10.000)</label>
         <p class="text-sm text-gray-600 mb-2">Poin yang kamu miliki: <strong>{{ $poinPembeli }}</strong></p>
 
-        <input type="number" id="poinInput" class="border rounded px-3 py-2 w-full max-w-sm"
-               placeholder="Masukkan jumlah poin yang ingin ditukar" min="0" max="{{ $poinPembeli }}" value="0"
-               oninput="updateOngkir()">
+        <div class="flex items-center space-x-2">
+            <button type="button" onclick="adjustPoin(-100)" class="px-3 py-1 bg-gray-300 rounded">-</button>
+            <input type="text" id="poinInput" class="border rounded px-3 py-2 w-24 text-center"
+                value="0" readonly>
+            <button type="button" onclick="adjustPoin(100)" class="px-3 py-1 bg-gray-300 rounded">+</button>
+        </div>
     </div>
 
     {{-- Total --}}
@@ -100,29 +103,25 @@
         const totalBarang = parseInt(document.getElementById('totalBarangValue').value);
         const isPengiriman = document.querySelector('input[name="tipe_pengiriman"]:checked').value === 'kirim';
 
-        // Hitung ongkir
         let ongkir = 0;
         if (isPengiriman) {
             ongkir = totalBarang < 1500000 ? 100000 : 0;
         }
 
-        // Hitung potongan dari poin
         const maxPoin = parseInt(document.getElementById('maxPoinPembeli').value);
         let poinDitukar = parseInt(document.getElementById('poinInput').value) || 0;
 
-        if (poinDitukar > maxPoin) poinDitukar = maxPoin;
+        if (poinDitukar > maxPoin) poinDitukar = Math.floor(maxPoin / 100) * 100;
         if (poinDitukar < 0) poinDitukar = 0;
 
-        const potongan = poinDitukar * 10000;
+        const potongan = Math.floor(poinDitukar / 100) * 10000;
         const totalBayar = totalBarang + ongkir - potongan;
 
-        // Tampilkan hasil
         document.getElementById('poinInput').value = poinDitukar;
         document.getElementById('ongkirText').innerText = formatRupiah(ongkir);
         document.getElementById('potonganText').innerText = formatRupiah(potongan);
         document.getElementById('totalBayarText').innerText = formatRupiah(Math.max(totalBayar, 0));
 
-        // Set input hidden form
         document.getElementById('tipe_pengiriman_hidden').value = isPengiriman ? 'kirim' : 'ambil';
         document.getElementById('poin_ditukar_hidden').value = poinDitukar;
 
@@ -132,8 +131,24 @@
         }
     }
 
+
     function formatRupiah(number) {
         return 'Rp ' + number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function adjustPoin(change) {
+        const maxPoin = parseInt(document.getElementById('maxPoinPembeli').value);
+        let poinDitukar = parseInt(document.getElementById('poinInput').value) || 0;
+
+        poinDitukar += change;
+
+        // Pastikan kelipatan 100 dan dalam batas
+        if (poinDitukar < 0) poinDitukar = 0;
+        if (poinDitukar > maxPoin) poinDitukar = Math.floor(maxPoin / 100) * 100;
+
+        // Update input dan tampilan
+        document.getElementById('poinInput').value = poinDitukar;
+        updateOngkir();
     }
 
     // Inisialisasi

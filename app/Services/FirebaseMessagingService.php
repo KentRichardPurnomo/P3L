@@ -12,7 +12,10 @@ class FirebaseMessagingService
 
     public function __construct()
     {
-        $factory = (new Factory)->withServiceAccount(storage_path('app/firebase/firebase_credentials.json'));
+        $factory = (new Factory)->withServiceAccount(base_path('firebase/firebase_credentials.json'));
+        if (!file_exists(base_path('firebase/firebase_credentials.json'))) {
+    throw new \Exception('❌ File Firebase credentials tidak ditemukan!');
+}
         $this->messaging = $factory->createMessaging();
     }
 

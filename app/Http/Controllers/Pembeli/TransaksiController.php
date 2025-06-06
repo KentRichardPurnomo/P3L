@@ -77,11 +77,16 @@ class TransaksiController extends Controller
         }
 
         $ongkir = $request->tipe_pengiriman === 'kirim' && $totalBarang < 1500000 ? 100000 : 0;
+
+        if ($request->poin_ditukar > 0 && $request->poin_ditukar < 100) {
+            return redirect()->route('cart')->with('error', 'Poin minimal yang dapat ditukar adalah 100.');
+        }
+
         $poinDitukar = min($request->poin_ditukar, $pembeli->poin);
         $potongan = $poinDitukar * 10000;
         $totalAkhir = max(0, $totalBarang + $ongkir - $potongan);
 
-        // Simpan transaksi
+        // Simpan transaksi awal
         $transaksi = Transaksi::create([
             'pembeli_id' => $pembeli->id,
             'tanggal' => now(),
@@ -91,13 +96,18 @@ class TransaksiController extends Controller
             'potongan' => $potongan,
             'total' => $totalAkhir,
             'status' => 'menunggu pembayaran',
-            'deadline_pembayaran' => now()->addMinutes(15),
+            'deadline_pembayaran' => now()->addMinutes(1),
             'jadwal_pengambilan_id' => null,
         ]);
-        
+
+        // ✅ Tambahkan no_nota
+        $tahun = now()->format('y');
+        $bulan = now()->format('m');
+        $transaksi->no_nota = "{$tahun}.{$bulan}.{$transaksi->id}";
+
+        $jumlahBarang = 0;
         $poinBaru = 0;
 
-        // Simpan detail & update barang
         foreach ($keranjang as $item) {
             $barang = $item->barang;
 
@@ -108,13 +118,14 @@ class TransaksiController extends Controller
                 'subtotal' => $barang->harga,
             ]);
 
-            // Update barang terjual dan simpan transaksi_id
             $barang->update([
                 'terjual' => 1,
                 'transaksi_id' => $transaksi->id,
+                'status' => 'Sold Out', // ✅ Barang ditandai terjual
             ]);
 
-            // Hitung poin reward
+            $jumlahBarang += 1;
+
             $poin = floor($barang->harga / 10000);
             if ($barang->harga > 500000) {
                 $bonus = floor($barang->harga * 0.2 / 10000);
@@ -123,12 +134,13 @@ class TransaksiController extends Controller
             $poinBaru += $poin;
         }
 
+        // ✅ Tambahkan jumlah_barang
+        $transaksi->jumlah_barang = $jumlahBarang;
+        $transaksi->save();
 
-        // Update poin pembeli
         $pembeli->poin = max(0, $pembeli->poin - $poinDitukar + $poinBaru);
         $pembeli->save();
 
-        // Kosongkan keranjang
         Keranjang::where('pembeli_id', $pembeli->id)->delete();
 
         return redirect()->route('pembeli.transaksi.uploadBuktiForm', $transaksi->id)

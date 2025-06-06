@@ -17,6 +17,7 @@ class KirimNotifikasiTitipCommand extends Command
 
     public function handle()
     {
+        $this->info("🔁 Command notifikasi:kirim-titip dijalankan!");
         $today = Carbon::today();
         $h3 = $today->copy()->addDays(3);
 

@@ -4,11 +4,16 @@ namespace App\Http\Controllers\CS;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use App\Models\Transaksi;
 use App\Models\Barang;
 use App\Models\Owner;
 use App\Models\KomisiLog;
 use App\Models\Penitip;
+use App\Models\Pembeli;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
 
 class CSProsesBarangController extends Controller
 {
@@ -29,7 +34,7 @@ class CSProsesBarangController extends Controller
 
     public function selesaikan($id)
     {
-        $transaksi = Transaksi::with('detail.barang.penitip')->findOrFail($id);
+        $transaksi = Transaksi::with('detail.barang.penitip', 'pembeli')->findOrFail($id);
 
         // Update status transaksi
         $transaksi->status = 'selesai';
@@ -86,7 +91,43 @@ class CSProsesBarangController extends Controller
             }
         }
 
+        // ✅ Kirim notifikasi jika tipe pengiriman adalah 'ambil'
+        if (strtolower($transaksi->tipe_pengiriman) === 'ambil') {
+            \Log::info("🔔 Transaksi tipe ambil, kirim notifikasi ke pembeli {$transaksi->pembeli_id}");
+            $this->kirimNotifikasiPembeli(
+                $transaksi->pembeli_id,
+                'Pesanan Selesai',
+                'Pesanan Anda telah berhasil diambil dan selesai diproses.'
+            );
+        }
+
         return redirect()->route('cs.barang.diproses')->with('success', 'Transaksi telah diselesaikan & komisi berhasil dibagikan.');
     }
 
+    private function kirimNotifikasiPembeli($pembeliId, $judul, $pesan)
+{
+    $pembeli = \App\Models\Pembeli::find($pembeliId);
+
+    if (!$pembeli || !$pembeli->fcm_token) {
+        \Log::warning("❌ Pembeli tidak ditemukan atau token kosong");
+        return;
+    }
+
+    try {
+        $messaging = (new Factory)
+            ->withServiceAccount(storage_path(env('FIREBASE_CREDENTIALS')))
+            ->createMessaging();
+
+        $message = CloudMessage::withTarget('token', $pembeli->fcm_token)
+            ->withNotification(Notification::create($judul, $pesan))
+            ->withData(['click_action' => 'FLUTTER_NOTIFICATION_CLICK']);
+
+        $messaging->send($message);
+
+        \Log::info("✅ Notifikasi FCM v1 terkirim ke pembeli ID: $pembeliId");
+
+    } catch (\Throwable $e) {
+        \Log::error("❌ Gagal kirim notifikasi FCM v1: " . $e->getMessage());
+    }
+}
 }

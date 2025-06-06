@@ -13,6 +13,7 @@ class SearchController extends Controller
         $keyword = $request->query('search');
 
         $barangs = Barang::query()
+            ->where('status', 'tersedia')
             ->when($keyword, function ($query, $keyword) {
                 $query->where('nama', 'like', '%' . $keyword . '%');
             })

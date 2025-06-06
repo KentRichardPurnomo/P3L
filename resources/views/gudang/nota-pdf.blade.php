@@ -2,41 +2,77 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Nota Penjualan</title>
+    <title>Nota Pengiriman Barang</title>
     <style>
-        body { font-family: sans-serif; font-size: 14px; margin: 20px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .section { margin-bottom: 15px; }
-        .label { font-weight: bold; display: inline-block; width: 180px; vertical-align: top; }
-        .value { display: inline-block; }
-        hr { margin: 15px 0; }
+        body { font-family: sans-serif; font-size: 12px; margin: 20px; }
+        .header { text-align: center; font-size: 14px; margin-bottom: 10px; }
+        .info-box { border: 1px solid #000; padding: 10px; }
+        .row { margin-bottom: 5px; }
+        .label { display: inline-block; width: 160px; font-weight: bold; }
+        .bold { font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h2>Nota Penjualan Barang</h2>
-        <p>ReuseMart - Pegawai Gudang</p>
-        <hr>
+
+<div class="header">
+    <h3>Nota Pengiriman Barang</h3>
+</div>
+
+<div class="info-box">
+    <div class="bold">ReuseMart</div>
+    <div>Jl. Green Eco Park No. 456 Yogyakarta</div>
+    <hr>
+
+    <div class="row"><span class="label">No Nota</span>: {{ $transaksi->no_nota }}</div>
+    <div class="row"><span class="label">Tanggal Pesan</span>: {{ \Carbon\Carbon::parse($transaksi->tanggal)->format('d/m/Y H:i') }}</div>
+    <div class="row"><span class="label">Tanggal Lunas</span>: {{ \Carbon\Carbon::parse($tanggalLunas)->format('d/m/Y H:i') }}</div>
+    <div class="row"><span class="label">Tanggal Kirim</span>: 
+        {{ optional($barang->jadwalPengirimen)->jadwal_kirim ? \Carbon\Carbon::parse($barang->jadwalPengirimen->jadwal_kirim)->format('d/m/Y') : '-' }}
     </div>
 
-    <div class="section">
-        <span class="label">Nama Barang:</span> <span class="value">{{ $barang->nama }}</span><br>
-        <span class="label">Deskripsi:</span> <span class="value">{{ $barang->deskripsi }}</span><br>
-        <span class="label">Harga:</span> <span class="value">Rp {{ number_format($barang->harga, 0, ',', '.') }}</span><br>
-        <span class="label">Kategori:</span> <span class="value">{{ $barang->kategori->nama ?? '-' }}</span>
+    <div class="row" style="margin-top: 10px;">
+        <span class="bold">Pembeli :</span> {{ $pembeli->email }} / {{ $pembeli->username }}
     </div>
+    <div class="row">{{ $alamat }}</div>
 
-    <div class="section">
-        <span class="label">Pembeli:</span> <span class="value">{{ $barang->transaksi->pembeli->username ?? '-' }}</span><br>
-        <span class="label">Tanggal Transaksi:</span> <span class="value">{{ $barang->transaksi->created_at->format('d M Y') }}</span><br>
-        <span class="label">Jadwal Pengiriman:</span> <span class="value">{{ \Carbon\Carbon::parse($barang->jadwalPengirimen->jadwal_kirim)->translatedFormat('d F Y, H:i') ?? 'Belum Dijadwalkan' }}</span><br>
-        <span class="label">Kurir:</span> <span class="value"> {{ $barang->jadwalPengirimen->pegawai->nama_lengkap ?? '-' }}</span></br>
-    </div>
+    <div class="row"><span class="label">Delivery</span>: Kurir ReuseMart ({{ $kurir->nama_lengkap ?? '-' }})</div>
 
-    <div class="section">
-        <img src="{{ public_path('images/barang/' . $barang->id . '/' . $barang->thumbnail) }}" 
-             alt="Thumbnail" 
-             style="max-height: 160px; border: 1px solid #ccc; padding: 5px; border-radius: 4px;">
-    </div>
+    <hr>
+
+    @foreach ($transaksi->detail as $detail)
+        <div class="row" style="display: flex; justify-content: space-between;">
+            <span>{{ $detail->barang->nama }}</span>
+            <span>Rp{{ number_format($detail->subtotal, 0, ',', '.') }}</span>
+        </div>
+    @endforeach
+
+    @php
+        $hargaBarang = $transaksi->detail->sum('subtotal');
+        $ongkir = ($transaksi->tipe_pengiriman === 'kirim' && $hargaBarang < 1500000) ? 100000 : 0;
+        $total = $hargaBarang + $ongkir;
+        $poin = $transaksi->poin_ditukar ?? 0;
+        $totalSetelahPotongan = $total - ($poin * 10000);
+    @endphp
+
+    <hr>
+    <div class="row"><span class="label">Total Harga Barang</span>: Rp{{ number_format($hargaBarang, 0, ',', '.') }}</div>
+    <div class="row"><span class="label">Ongkos Kirim</span>: Rp{{ number_format($ongkir, 0, ',', '.') }}</div>
+    <div class="row"><span class="label">Potongan ({{ $poin }} poin)</span>: Rp{{ number_format($poin * 10000, 0, ',', '.') }}</div>
+    <div class="row bold"><span class="label">Total Setelah Potongan</span>: Rp{{ number_format($totalSetelahPotongan, 0, ',', '.') }}</div>
+
+    <br><br>
+    <div class="row"><span class="label">Poin dari transaksi ini</span>: {{ $poinTransaksi }} poin</div>
+    <div class="row"><span class="label">Total poin pembeli saat ini</span>: {{ $totalPoinPembeli }} poin</div>
+
+    <br><br>
+    <div class="row"><span class="label">QC oleh</span>: P{{ $qc->id ?? '-' }} – {{ $qc->nama_lengkap ?? '-' }}</div>
+
+    <br><br>
+    <div class="bold">Diterima oleh:</div>
+    <br><br><br><br>
+    <div>(.........................................)</div>
+    <div>Tanggal: .......................</div>
+</div>
+
 </body>
 </html>

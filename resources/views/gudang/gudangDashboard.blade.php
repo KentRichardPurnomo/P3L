@@ -19,16 +19,30 @@
     </div>
     
     <div class="mt-6">
-        <a href="{{ route('gudang.barang.create') }}" 
-        class="block bg-green-600 text-white text-center py-3 rounded shadow hover:bg-green-700 transition">
+        <a href="{{ route('gudang.barang.formJumlah') }}" 
+            class="block bg-green-600 text-white text-center py-3 rounded shadow hover:bg-green-700 transition">
             + Tambah Barang Titipan
         </a>
     </div>
 
     <div class="mt-6">
-        <a href="{{ route('gudang.barang.index') }}"
+        <a href="{{ route('gudang.barang.penitipList') }}"
         class="block bg-indigo-600 text-white text-center py-3 rounded shadow hover:bg-indigo-700 transition">
-            📦 Lihat Daftar Semua Barang Titipan
+            📦 Lihat Daftar Penitip
+        </a>
+    </div>
+
+    <div class="mt-6">
+        <a href="{{ route('gudang.barang.index') }}"
+        class="block bg-gray-600 text-white text-center py-3 rounded shadow hover:bg-gray-700 transition">
+            📋 Lihat Semua Barang Titipan
+        </a>
+    </div>
+
+    <div class="mt-6">
+        <a href="{{ route('gudang.barang.mendekatiBatas') }}"
+        class="block bg-red-600 text-white text-center py-3 rounded shadow hover:bg-red-700 transition">
+            ⏳ Barang Mendekati Batas Titip (≤ 3 Hari)
         </a>
     </div>
 
