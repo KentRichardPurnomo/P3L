@@ -20,7 +20,9 @@ class Transaksi extends Model
         'potongan',
         'bukti_transfer',
         'deadline_pembayaran',
-        'jadwal_pengambilan_id'
+        'jadwal_pengambilan_id',
+        'no_nota',
+        'jumlah_barang',
     ];
 
     public function pembeli()

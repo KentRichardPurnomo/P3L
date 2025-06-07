@@ -16,10 +16,12 @@ class Pembeli extends Authenticatable
         'username',
         'email',
         'no_telp',
+        'fcm_token',
         'password',
         'plaintext_password',
         'profile_picture',
         'default_alamat_id',
+        
     ];
 
     protected $hidden = [

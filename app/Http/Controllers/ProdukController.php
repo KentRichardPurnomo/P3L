@@ -10,7 +10,7 @@ class ProdukController extends Controller
 {
     public function index()
     {
-        $barangs = Barang::latest()->paginate(30);
+        $barangs = Barang::where('status', 'tersedia')->latest()->paginate(30);
         return view('produk.index', compact('barangs'));
     }
 }

@@ -2,8 +2,8 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto p-6 bg-white rounded shadow mt-6">
-    <a href="{{ route('gudang.barang.index') }}"
-       class="text-green-600 hover:text-green-800 text-sm font-semibold mb-4 inline-block">← Kembali ke Daftar Barang</a>
+    <a href="{{ url()->previous() }}"
+       class="text-green-600 hover:text-green-800 text-sm font-semibold mb-4 inline-block">← Kembali</a>
 
     <div class="flex flex-col md:flex-row gap-6">
         <div class="flex-1">

@@ -65,6 +65,11 @@ return [
             'driver' => 'session',
             'provider' => 'owners',
         ],
+
+        'hunter' => [
+            'driver' => 'session',
+            'provider' => 'hunters',
+        ],
     ],
 
     /*
@@ -113,6 +118,11 @@ return [
         'owners' => [
             'driver' => 'eloquent',
             'model' => App\Models\Owner::class,
+        ],
+
+        'hunters' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Hunter::class,
         ],
 
         // 'users' => [

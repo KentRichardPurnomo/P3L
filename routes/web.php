@@ -36,6 +36,38 @@ use App\Http\Controllers\CS\CSDiskusiController;
 use App\Http\Controllers\Pembeli\TransaksiController;
 use App\Http\Controllers\Gudang\GudangDashboardController;
 use App\Http\Controllers\Gudang\BarangGudangController;
+use App\Http\Controllers\HunterDashboardController;
+use App\Http\Controllers\AdminHunterController;
+use App\Services\FirebaseMessagingService;
+use App\Models\Pembeli;
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
+use App\Http\Controllers\Owner\OwnerTransaksiController;
+use App\Http\Controllers\Owner\LaporanPenjualanKategoriController;
+
+Route::get('/test-fcm-v1/{id}', function ($id) {
+    $pembeli = Pembeli::find($id);
+    if (!$pembeli || !$pembeli->fcm_token) {
+        return '❌ Token tidak ditemukan';
+    }
+
+    try {
+        $messaging = (new Factory)
+            ->withServiceAccount(storage_path(env('FIREBASE_CREDENTIALS')))
+            ->createMessaging();
+
+        $message = CloudMessage::withTarget('token', $pembeli->fcm_token)
+            ->withNotification(Notification::create('Tes V1', 'Ini notifikasi FCM V1 manual'))
+            ->withData(['click_action' => 'FLUTTER_NOTIFICATION_CLICK']);
+
+        $messaging->send($message);
+        return '✅ Notifikasi FCM V1 terkirim';
+
+    } catch (\Throwable $e) {
+        return '❌ Gagal: ' . $e->getMessage();
+    }
+});
 
 Route::get('/login', [LoginUniversalController::class, 'showLoginForm'])->name('login.universal');
 Route::post('/login', [LoginUniversalController::class, 'login'])->name('login.universal.submit');
@@ -43,6 +75,8 @@ Route::post('/login', [LoginUniversalController::class, 'login'])->name('login.u
 // owner
 Route::middleware(['auth:owner'])->prefix('owner')->name('owner.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Owner\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/transaksi', [OwnerTransaksiController::class, 'index'])->name('transaksi.index');
+    Route::get('/transaksi/{id}', [OwnerTransaksiController::class, 'show'])->name('transaksi.show');
     Route::get('/request-donasi', [\App\Http\Controllers\Owner\DashboardController::class, 'requestDonasi'])->name('request');
     Route::get('/histori-donasi', [\App\Http\Controllers\Owner\DashboardController::class, 'historiDonasi'])->name('histori');
 
@@ -51,6 +85,11 @@ Route::middleware(['auth:owner'])->prefix('owner')->name('owner.')->group(functi
 
     Route::get('/donasi/{id}/edit', [\App\Http\Controllers\Owner\DonasiController::class, 'edit'])->name('donasi.edit');
     Route::put('/donasi/{id}', [\App\Http\Controllers\Owner\DonasiController::class, 'update'])->name('donasi.update');
+
+    Route::get('/laporan', [LaporanPenjualanKategoriController::class, 'index'])->name('laporan.index');
+    Route::get('/laporan/download', [LaporanPenjualanKategoriController::class, 'cetakPDF'])->name('laporan.download');
+    Route::get('/laporan/kategori/{kategori}/download', [LaporanPenjualanKategoriController::class, 'downloadPerKategori'])->name('laporan.downloadPerKategori');
+
 });
 
 
@@ -156,11 +195,32 @@ Route::prefix('admin')->middleware('auth:pegawai')->group(function () {
     Route::resource('/jabatan', JabatanController::class);
 });
 
+Route::middleware(['auth:pegawai'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/hunters/create', [AdminHunterController::class, 'create'])->name('hunter.create');
+    Route::post('/hunters', [AdminHunterController::class, 'store'])->name('hunter.store');
+});
+
 //Pegawai Gudang
 Route::middleware(['auth:pegawai'])->group(function () {
     Route::get('/gudang/dashboard', [GudangDashboardController::class, 'index'])->name('gudang.dashboard');
 });
 Route::prefix('gudang')->middleware(['auth:pegawai'])->group(function () {
+    Route::get('/form-jumlah', [BarangGudangController::class, 'formJumlahBarang'])->name('gudang.barang.formJumlah');
+    Route::get('/multi-create', [BarangGudangController::class, 'multiCreate'])->name('gudang.barang.multiCreate');
+    Route::post('/multi-store', [BarangGudangController::class, 'multiStore'])->name('gudang.barang.multiStore');
+    Route::get('/multi-result', [BarangGudangController::class, 'multiResult'])->name('gudang.barang.multiResult');
+    Route::get('/cetak-nota/{id}', [BarangGudangController::class, 'cetakNota'])->name('gudang.barang.cetakNota');
+    Route::post('/cetak-nota-gabungan', [BarangGudangController::class, 'cetakNotaGabungan'])->name('gudang.barang.cetakNotaGabungan');
+
+    // Menampilkan daftar penitip
+    Route::get('/penitip-barang', [BarangGudangController::class, 'daftarPenitip'])->name('gudang.barang.penitipList');
+
+    // Menampilkan barang milik satu penitip
+    Route::get('/penitip-barang/{id}', [BarangGudangController::class, 'barangPerPenitip'])->name('gudang.barang.barangPerPenitip');
+
+    Route::get('/barang-mendekati-batas', [BarangGudangController::class, 'barangMendekatiBatasTitip'])->name('gudang.barang.mendekatiBatas');
+
+
     Route::get('/barang/create', [BarangGudangController::class, 'create'])->name('gudang.barang.create');
     Route::get('/gudang/barang', [BarangGudangController::class, 'index'])->name('gudang.barang.index');
     Route::get('/gudang/barang/transaksi', [BarangGudangController::class, 'transaksi'])->name('gudang.barang.transaksi');
@@ -181,7 +241,14 @@ Route::prefix('gudang')->middleware(['auth:pegawai'])->group(function () {
     Route::post('/gudang/atur-pengambilan-barang/{id}', [BarangGudangController::class, 'simpanJadwalAmbil'])->name('gudang.jadwal-ambil.simpan');
     Route::get('/gudang/barang/{id}/nota-pengambilan', [BarangGudangController::class, 'cetakNotaPengambilan'])->name('gudang.barang.notaPengambilan');
     Route::post('/gudang/barang/{id}/konfirmasi-pengambilan', [BarangGudangController::class, 'konfirmasiPengambilan'])->name('gudang.barang.konfirmasi');
+    Route::get('/gudang/barang/{id}/detail', [BarangGudangController::class, 'detail'])->name('gudang.barang.detail');
+    Route::get('/gudang/barang-diambil-kembali', [BarangGudangController::class, 'barangDiambilKembali'])
+    ->name('gudang.barang.diambil_kembali');
+});
 
+//hunter (biar gampang)
+Route::middleware(['auth:hunter'])->group(function () {
+    Route::get('/hunter/dashboard', [HunterDashboardController::class, 'index'])->name('hunter.dashboard');
 });
 
 
@@ -293,6 +360,41 @@ Route::post('/pembeli/notifikasi/baca-semua', function () {
     auth('pembeli')->user()->unreadNotifications->markAsRead();
     return back();
 })->name('pembeli.notifikasi.baca-semua');
+
+Route::get('/test-notif-pembeli/{id}', function ($id) {
+    $pembeli = Pembeli::find($id);
+
+    if (!$pembeli || !$pembeli->fcm_token) {
+        return '❌ Pembeli atau token tidak ditemukan';
+    }
+
+    $response = Http::withToken(env('FCM_SERVER_KEY'))->post('https://fcm.googleapis.com/fcm/send', [
+        'to' => $pembeli->fcm_token,
+        'notification' => [
+            'title' => 'Transaksi Selesai!',
+            'body' => 'Pesananmu sudah selesai dan siap dinikmati!',
+        ],
+        'data' => [
+            'click_action' => 'FLUTTER_NOTIFICATION_CLICK',
+        ]
+    ]);
+
+    \Log::info("🔁 Tes kirim ke pembeli ID $id: " . $response->body());
+
+    return '✅ Coba kirim notifikasi, cek di HP';
+});
+
+//token
+Route::get('/kirim-tes-notifikasi', function () {
+    $token = 'f8lso_6VTmefJkJXl9xlZ2:APA91bG7lfJEpmrYXl7gDG5A3EzRM6dATgx7hRkTbJ1pa9nDv0u6fdl25kH8vmZ97KQEP59H374If_EP0tthTKi7Fd1haJ5WfnuC8ZB4y4zkSsxd-rhWj9U'; // <-- Ganti dengan token HP kamu
+    $title = '🎉 Notifikasi dari Laravel';
+    $body = 'Halo, ini notifikasi pertamamu dari ReuseMart!';
+
+    $firebase = new FirebaseMessagingService();
+    $firebase->sendToToken($token, $title, $body);
+
+    return '✅ Notifikasi berhasil dikirim!';
+});
 
 
 Route::middleware('auth:penitip')->group(function () {

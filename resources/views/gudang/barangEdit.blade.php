@@ -46,6 +46,11 @@
                    class="w-full border rounded px-3 py-2" pattern="[0-9]+" title="Hanya angka tanpa titik/koma" required>
         </div>
 
+        <div class="mb-3">
+            <label>Berat Barang (kg)</label>
+            <input type="number" step="0.01" name="berat" value="{{ $barang->berat }}" class="w-full border rounded p-2" required>
+        </div>
+
         {{-- Thumbnail --}}
         <div class="mb-4">
             <label class="block font-semibold">Thumbnail Saat Ini</label>

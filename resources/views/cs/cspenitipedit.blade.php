@@ -26,6 +26,10 @@
             <input type="text" name="no_telp" value="{{ $penitip->no_telp }}" class="w-full border rounded p-2" required>
         </div>
         <div class="mb-3">
+            <label>Alamat</label>
+            <textarea name="alamat" class="w-full border rounded p-2" required>{{ $penitip->alamat }}</textarea>
+        </div>
+        <div class="mb-3">
             <label>No KTP</label>
             <input type="text" name="no_ktp" value="{{ $penitip->no_ktp }}" class="w-full border rounded p-2" required>
         </div>

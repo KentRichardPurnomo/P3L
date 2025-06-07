@@ -26,6 +26,10 @@
         + Tambah Jabatan Baru
     </a>
 
+    <a href="{{ route('admin.hunter.create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded mb-6 inline-block hover:bg-indigo-700 ml-2">
+        + Tambah Hunter Baru
+    </a>
+
     <table class="w-full border border-gray-300 table-auto">
         <thead class="bg-gray-100">
             <tr>

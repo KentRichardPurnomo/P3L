@@ -15,6 +15,7 @@ class Penitip extends Authenticatable
         'username',
         'email',
         'no_telp',
+        'alamat',
         'no_ktp',
         'foto_ktp',
         'password',
@@ -22,6 +23,7 @@ class Penitip extends Authenticatable
         'plaintext_password',
         'poin',
         'saldo',
+        'fcm_token',
     ];
 
     protected $casts = [

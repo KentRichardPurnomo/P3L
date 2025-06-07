@@ -11,16 +11,16 @@ class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        $barangs = Barang::latest()->take(10)->get();
-
         $keyword = $request->query('search');
-        
-        // $barangs = Barang::query()
-        //     ->when($keyword, function ($query, $keyword) {
-        //         $query->where('nama', 'like', '%' . $keyword . '%');
-        //     })
-        //     ->latest()
-        //     ->get();
+
+        $barangs = Barang::query()
+            ->where('status', 'tersedia')
+            ->when($keyword, function ($query, $keyword) {
+                $query->where('nama', 'like', '%' . $keyword . '%');
+            })
+            ->latest()
+            ->take(10)
+            ->get();
 
         $kategoris = Kategori::all();
 

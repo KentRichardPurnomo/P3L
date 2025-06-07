@@ -16,8 +16,14 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('transaksi:batalkan-expired')->everyMinute();
+        // $schedule->command('notifikasi:kirim-titip')->dailyAt('08:28');
+        $schedule->command('notifikasi:kirim-titip')->everyMinute(); //buat testing doang
         $schedule->command('transaksi:cek-hangus')->everyMinute();
     }
+
+    protected $commands = [
+        \App\Console\Commands\KirimNotifikasiTitipCommand::class,
+    ];
 
     /**
      * Register the commands for the application.
@@ -30,4 +36,5 @@ class Kernel extends ConsoleKernel
 
         require base_path('routes/console.php');
     }
+    
 }

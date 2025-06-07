@@ -15,6 +15,7 @@ class Barang extends Model
         'deskripsi',
         'status',
         'harga',
+        'berat',
         'thumbnail',
         'foto_lain',
         'garansi_berlaku_hingga',

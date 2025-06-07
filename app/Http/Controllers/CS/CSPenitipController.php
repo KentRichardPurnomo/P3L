@@ -40,6 +40,7 @@ class CSPenitipController extends Controller
             'username' => 'required|unique:penitips,username',
             'email' => 'required|email|unique:penitips,email',
             'no_telp' => 'required',
+            'alamat' => 'required|string|max:255',
             'no_ktp' => 'required|unique:penitips,no_ktp',
             'foto_ktp' => 'required|image|mimes:jpg,jpeg,png|max:2048',
             'password' => 'required|min:6',
@@ -51,6 +52,7 @@ class CSPenitipController extends Controller
             'username' => $request->username,
             'email' => $request->email,
             'no_telp' => $request->no_telp,
+            'alamat' => $request->alamat,
             'no_ktp' => $request->no_ktp,
             'foto_ktp' => $path,
             'password' => Hash::make($request->password),
@@ -73,11 +75,12 @@ class CSPenitipController extends Controller
             'username' => 'required|unique:penitips,username,' . $id,
             'email' => 'required|email|unique:penitips,email,' . $id,
             'no_telp' => 'required',
+            'alamat' => 'required|string|max:255',
             'no_ktp' => 'required|unique:penitips,no_ktp,' . $id,
             'foto_ktp' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $data = $request->only(['username', 'email', 'no_telp', 'no_ktp']);
+        $data = $request->only(['username', 'email', 'no_telp', 'alamat' , 'no_ktp']);
 
         if ($request->hasFile('foto_ktp')) {
             $path = $request->file('foto_ktp')->store('ktp_penitip', 'public');

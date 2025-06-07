@@ -59,7 +59,7 @@
     <!-- Header utama -->
     <header class="bg-green-500 text-white sticky top-[32px] z-40 flex items-center justify-between px-6 py-3 shadow">
         <!-- Logo -->
-        <a href="{{ url('/admin/dashboard') }}" class="flex items-center space-x-3">
+        <a href="{{ url('/gudang/dashboard') }}" class="flex items-center space-x-3">
             <img src="{{ asset('images/logo-reusemart.png') }}" alt="ReuseMart Logo" class="h-12">
             <div class="text-2xl md:text-3xl font-bold">ReuseMart</div>
         </a>
