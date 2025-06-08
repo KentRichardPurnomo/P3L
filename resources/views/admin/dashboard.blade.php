@@ -21,6 +21,9 @@
         <a href="{{ route('admin.pegawai.index') }}" class="block text-center bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700">
             Cari Data Pegawai
         </a>
+        <a href="{{ route('admin.merchandise.index') }}" class="block text-center bg-yellow-600 text-white py-2 px-4 rounded hover:bg-yellow-700">
+            Kelola Merchandise
+        </a>
     </div>
 </div>
 @endsection

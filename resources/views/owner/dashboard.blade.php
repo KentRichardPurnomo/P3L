@@ -31,6 +31,11 @@
             class="block w-full text-center bg-yellow-600 text-white py-2 rounded hover:bg-yellow-700">
             💰 Lihat Transaksi ReuseMart
         </a>
+
+        <a href="{{ route('owner.laporan.index') }}"
+            class="block w-full text-center bg-red-600 text-white py-2 rounded hover:bg-yellow-700">
+            📑 Laporan Penjualan per Kategori Barang
+        </a>
     </div>
 
 </div>

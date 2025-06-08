@@ -17,7 +17,7 @@
         <p><strong>Status:</strong>
             <span class="inline-block px-2 py-1 rounded text-white
                 @if($transaksi->status === 'selesai') bg-green-600
-                @elseif($transaksi->status === 'diproses') bg-blue-600
+                @elseif($transaksi->status === 'disiapkan') bg-blue-600
                 @elseif($transaksi->status === 'menunggu konfirmasi') bg-yellow-600
                 @elseif($transaksi->status === 'menunggu pembayaran') bg-orange-600
                 @else bg-red-600

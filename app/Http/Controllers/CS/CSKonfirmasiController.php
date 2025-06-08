@@ -22,7 +22,7 @@ class CSKonfirmasiController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'aksi' => 'required|in:diproses,pembayaran ditolak',
+            'aksi' => 'required|in:disiapkan,pembayaran ditolak',
         ]);
 
         $transaksi = Transaksi::findOrFail($id);

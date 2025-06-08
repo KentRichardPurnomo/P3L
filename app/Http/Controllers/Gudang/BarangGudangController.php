@@ -697,6 +697,9 @@ class BarangGudangController extends Controller
     public function konfirmasiPengambilan($id)
     {
         $barang = Barang::findOrFail($id);
+        if ($barang->status === 'Sold Out') {
+            return redirect()->back()->with('error', 'Barang sudah dikonfirmasi sebelumnya.');
+        }
 
         // Update status barang
         $barang->status = 'Sold Out';

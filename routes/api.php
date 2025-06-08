@@ -7,6 +7,8 @@ use App\Models\Barang;
 use App\Models\Kategori;
 use App\Models\Penitip;
 use App\Models\Pembeli;
+use App\Models\Transaksi;
+use Illuminate\Support\Carbon;
 
 // Login API
 Route::post('/login', [LoginApiController::class, 'login']);
@@ -228,4 +230,54 @@ Route::get('/pembeli/{id}/notifikasi', function ($id) {
             'created_at' => $notif->created_at->diffForHumans()
         ];
     });
+});
+
+//histori pembeli
+Route::get('/pembeli/{id}/riwayat-transaksi', function ($id) {
+    $transaksis = Transaksi::where('pembeli_id', $id)
+        ->with(['detail.barang'])
+        ->orderByDesc('tanggal')
+        ->get();
+
+    return $transaksis->map(function ($transaksi) {
+        return [
+            'id' => $transaksi->id,
+            'tanggal' => Carbon::parse($transaksi->tanggal)->format('Y-m-d H:i'),
+            'status' => $transaksi->status,
+            'total' => $transaksi->total,
+            'detail' => $transaksi->detail->map(function ($item) {
+                if (!$item->barang) return null;
+                return [
+                    'nama' => $item->barang->nama,
+                    'harga' => $item->barang->harga,
+                    'thumbnail' => url("images/barang/{$item->barang->id}/{$item->barang->thumbnail}"),
+                ];
+            })->filter()->values(),
+        ];
+    });
+});
+
+//histori detail pembeli
+Route::get('/pembeli/transaksi/{id}', function ($id) {
+    $transaksi = Transaksi::with(['detail.barang', 'alamat'])->findOrFail($id);
+
+    return [
+        'id' => $transaksi->id,
+        'tanggal' => $transaksi->tanggal,
+        'status' => $transaksi->status,
+        'tipe_pengiriman' => $transaksi->tipe_pengiriman,
+        'alamat' => optional($transaksi->alamat)->alamat,
+        'poin_ditukar' => $transaksi->poin_ditukar,
+        'potongan' => $transaksi->potongan,
+        'total' => $transaksi->total,
+        'detail' => $transaksi->detail->map(function ($item) {
+            if (!$item->barang) return null;
+            return [
+                'nama' => $item->barang->nama,
+                'harga' => $item->barang->harga,
+                'subtotal' => $item->subtotal,
+                'thumbnail' => url("images/barang/{$item->barang->id}/{$item->barang->thumbnail}"),
+            ];
+        })->filter()->values(),
+    ];
 });

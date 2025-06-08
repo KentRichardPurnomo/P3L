@@ -7,7 +7,7 @@
             class="inline-flex items-center text-green-600 hover:text-green-800 font-semibold">
                 ← Kembali
             </a>
-        </div>
+    </div>
     <h2 class="text-xl font-bold mb-4">Histori Barang Donasi</h2>
 
     <form method="GET" action="{{ route('owner.histori') }}" class="mb-6">

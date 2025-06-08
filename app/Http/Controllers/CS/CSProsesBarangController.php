@@ -20,7 +20,7 @@ class CSProsesBarangController extends Controller
     public function index()
     {
         $transaksis = Transaksi::with(['pembeli', 'detail.barang'])
-            ->where('status', 'diproses')
+            ->where('status', 'disiapkan')
             ->get();
 
         return view('cs.barang-diproses', compact('transaksis'));

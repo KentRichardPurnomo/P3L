@@ -79,13 +79,17 @@
                                 <a href="{{ route('gudang.barang.notaPengambilan', $barang->id) }}"
                                     class="text-sm text-red-600 underline hover:text-red-800" target="_blank">Cetak Nota</a>
 
-                                <form method="POST" action="{{ route('gudang.barang.konfirmasi', $barang->id) }}">
-                                    @csrf
-                                    <button class="text-sm bg-green-600 text-white px-3 py-1 mt-2 rounded hover:bg-green-700"
-                                        onclick="return confirm('Konfirmasi bahwa barang sudah diambil oleh pembeli?')">
-                                        Konfirmasi Pengambilan
-                                    </button>
-                                </form>
+                                @if($barang->status !== 'Sold Out')
+                                    <form method="POST" action="{{ route('gudang.barang.konfirmasi', $barang->id) }}">
+                                        @csrf
+                                        <button class="text-sm bg-green-600 text-white px-3 py-1 mt-2 rounded hover:bg-green-700"
+                                            onclick="return confirm('Konfirmasi bahwa barang sudah diambil oleh pembeli?')">
+                                            Konfirmasi Pengambilan
+                                        </button>
+                                    </form>
+                                @else
+                                    <span class="text-xs text-gray-400 italic">Barang sudah diambil oleh Pembeli.</span>
+                                @endif
                             @else
                                 <span class="text-xs text-gray-400 italic">Ambil dulu untuk cetak nota & konfirmasi</span>
                             @endif
