@@ -45,6 +45,8 @@ use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
 use App\Http\Controllers\Owner\OwnerTransaksiController;
 use App\Http\Controllers\Owner\LaporanPenjualanKategoriController;
+use App\Http\Controllers\Admin\AdminMerchandiseController;
+use App\Http\Controllers\ProfilHunterController;
 
 Route::get('/test-fcm-v1/{id}', function ($id) {
     $pembeli = Pembeli::find($id);
@@ -86,9 +88,14 @@ Route::middleware(['auth:owner'])->prefix('owner')->name('owner.')->group(functi
     Route::get('/donasi/{id}/edit', [\App\Http\Controllers\Owner\DonasiController::class, 'edit'])->name('donasi.edit');
     Route::put('/donasi/{id}', [\App\Http\Controllers\Owner\DonasiController::class, 'update'])->name('donasi.update');
 
+    //laporan per kategori
     Route::get('/laporan', [LaporanPenjualanKategoriController::class, 'index'])->name('laporan.index');
     Route::get('/laporan/download', [LaporanPenjualanKategoriController::class, 'cetakPDF'])->name('laporan.download');
     Route::get('/laporan/kategori/{kategori}/download', [LaporanPenjualanKategoriController::class, 'downloadPerKategori'])->name('laporan.downloadPerKategori');
+
+    //laporan massa pentipan sudah habis
+    Route::get('/laporan/masa-penitipan', [\App\Http\Controllers\Owner\LaporanMasaPenitipanController::class, 'index'])->name('laporan.masaPenitipan');
+    Route::get('/laporan/masa-penitipan/download', [\App\Http\Controllers\Owner\LaporanMasaPenitipanController::class, 'download'])->name('laporan.masaPenitipan.download');
 
 });
 
@@ -143,6 +150,10 @@ Route::prefix('admin')->middleware(['auth:pegawai', 'admin.only'])->group(functi
     Route::get('/organisasi', [AdminOrganisasiController::class, 'index'])->name('admin.organisasi.index');
     Route::get('/organisasi/{username}/edit', [AdminOrganisasiController::class, 'edit'])->name('admin.organisasi.edit');
     Route::put('/organisasi/{username}', [AdminOrganisasiController::class, 'update'])->name('admin.organisasi.update');
+
+    Route::resource('/merchandise', AdminMerchandiseController::class, [
+        'as' => 'admin'
+    ]);
 });
 
 Route::middleware(['auth:pegawai'])->prefix('admin')->name('admin.')->group(function () {
@@ -251,6 +262,10 @@ Route::middleware(['auth:hunter'])->group(function () {
     Route::get('/hunter/dashboard', [HunterDashboardController::class, 'index'])->name('hunter.dashboard');
 });
 
+Route::middleware('auth:hunter')->prefix('hunter')->group(function () {
+    Route::get('/profil/edit', [ProfilHunterController::class, 'edit'])->name('hunter.profil.edit');
+    Route::post('/profil/update', [ProfilHunterController::class, 'update'])->name('hunter.profil.update');
+});
 
 /*
 |--------------------------------------------------------------------------

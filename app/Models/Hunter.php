@@ -18,6 +18,7 @@ class Hunter extends Authenticatable
         'password',
         'nama_lengkap',
         'profile_picture',
+        'fcm_token',
     ];
 
     protected $hidden = ['password'];

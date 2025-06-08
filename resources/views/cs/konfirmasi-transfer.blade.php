@@ -44,7 +44,7 @@
 
                     <form action="{{ route('cs.konfirmasi.update', $transaksi->id) }}" method="POST" class="mt-4 flex gap-3">
                         @csrf
-                        <button name="aksi" value="diproses"
+                        <button name="aksi" value="disiapkan"
                                 class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                             ✅ Konfirmasi Pembayaran
                         </button>

@@ -51,10 +51,10 @@ class LaporanPenjualanKategoriController extends Controller
                         return $barang->kategori->nama ?? 'Tanpa Kategori';
                     });
 
-        $pdf = Pdf::loadView('owner.laporan.penjualanKategori', compact('data'))
+        $pdf = Pdf::loadView('owner.laporan.penjualanSemuaKategori', compact('data'))
                 ->setPaper('a4', 'portrait');
 
-        return $pdf->download('laporan-penjualan-per-kategori.pdf');
+        return $pdf->download('penjualan-semua-kategori.pdf');
     }
 }
 
