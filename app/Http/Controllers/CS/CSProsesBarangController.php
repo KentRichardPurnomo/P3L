@@ -78,6 +78,22 @@ class CSProsesBarangController extends Controller
                 $owner->saldo += $komisiOwner;
                 $owner->save();
 
+                 // nambah saldo dan komisi hunter
+                $komisiHunter = 0;
+                $hunterId = null;
+                if ($barang->komisiLogs()->exists()) {
+                    $existingLog = $barang->komisiLogs()->latest()->first();
+                    $hunterId = $existingLog->hunter_id;
+                }
+                if ($hunterId) {
+                    $komisiHunter = 0.05 * $harga;
+                    $hunter = \App\Models\Hunter::find($hunterId);
+                    if ($hunter) {
+                        $hunter->saldo += $komisiHunter;
+                        $hunter->save();
+                    }
+                }
+
                 // 6. Simpan log
                 KomisiLog::create([
                     'transaksi_id' => $transaksi->id,
@@ -87,6 +103,8 @@ class CSProsesBarangController extends Controller
                     'komisi_owner' => $komisiOwner,
                     'komisi_penitip' => $harga - $komisiOwner,
                     'bonus_penitip' => $bonus,
+                    'komisi_hunter' => $komisiHunter,
+                    'hunter_id' => $hunterId,
                 ]);
             }
         }

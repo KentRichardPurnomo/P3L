@@ -1,5 +1,16 @@
 @extends('layouts.app-penitip')
 
+@php
+    use Carbon\Carbon;
+    use App\Models\TopSeller;
+
+    $lastMonth = Carbon::now()->subMonth();
+    $isTopSeller = TopSeller::where('penitip_id', $penitip->id)
+        ->where('bulan', $lastMonth->month)
+        ->where('tahun', $lastMonth->year)
+        ->exists();
+@endphp
+
 @section('content')
 <div class="max-w-5xl mx-auto mt-10 bg-white p-6 rounded shadow space-y-8">
     {{-- Notifikasi --}}
@@ -37,7 +48,14 @@
         <img src="{{ $penitip->profile_picture ? asset('storage/' . $penitip->profile_picture) : asset('images/default-user.png') }}"
              class="w-24 h-24 rounded-full object-cover border">
         <div>
-            <h2 class="text-xl font-bold">Username : {{ $penitip->username }}</h2>
+            <h2 class="text-xl font-bold">
+                Username : {{ $penitip->username }}
+                @if ($isTopSeller)
+                    <span class="ml-2 bg-yellow-300 text-yellow-800 text-xs font-semibold px-2 py-1 rounded-full">
+                        ⭐ Top Seller Bulan Lalu
+                    </span>
+                @endif
+            </h2>
             <p><i class="fas fa-envelope mr-1"></i>Email✉️ : {{ $penitip->email }}</p>
             <p><i class="fas fa-phone mr-1"></i>No Telp☎️ : {{ $penitip->no_telp }}</p>
             <p class="text-lg">Saldo: Rp{{ number_format($penitip->saldo, 0, ',', '.') }}</p>

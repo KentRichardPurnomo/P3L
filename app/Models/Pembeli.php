@@ -59,4 +59,9 @@ class Pembeli extends Authenticatable
         return $this->hasMany(JadwalPengambilan::class, 'pembeli_id');
     }
 
+    public function redeemPoins()
+    {
+        return $this->hasMany(RedeemPoin::class);
+    }
+
 }

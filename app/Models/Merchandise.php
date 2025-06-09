@@ -14,4 +14,9 @@ class Merchandise extends Model
         'thumbnail',
         'stok',
     ];
+
+    public function redeemPoins()
+    {
+        return $this->hasMany(RedeemPoin::class);
+    }
 }

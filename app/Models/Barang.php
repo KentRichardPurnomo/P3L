@@ -90,6 +90,11 @@ class Barang extends Model
     {
         return $this->belongsTo(Pembeli::class, 'pembeli_id'); 
     }
+
+    public function komisiLogs()
+    {
+        return $this->hasMany(\App\Models\KomisiLog::class, 'barang_id');
+    }
     
 }
 
