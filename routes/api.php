@@ -8,7 +8,11 @@ use App\Models\Kategori;
 use App\Models\Penitip;
 use App\Models\Pembeli;
 use App\Models\Transaksi;
+use App\Models\Hunter;
 use Illuminate\Support\Carbon;
+use App\Models\TopSeller;
+use App\Http\Controllers\Api\MerchandiseApiController;
+use App\Http\Controllers\Api\RedeemPoinApiController;
 
 // Login API
 Route::post('/login', [LoginApiController::class, 'login']);
@@ -58,10 +62,12 @@ Route::get('/barang', function (Request $request) {
         ]);
 });
 
-// Detail Barang
+//ambil detail barang
 Route::get('/barang/{id}', function ($id) {
     $barang = Barang::with(['kategori', 'penitip'])->findOrFail($id);
     $fotoLain = json_decode($barang->foto_lain ?? '[]');
+
+    $lastMonth = Carbon::now()->subMonth();
 
     return [
         'id' => $barang->id,
@@ -75,6 +81,10 @@ Route::get('/barang/{id}', function ($id) {
         'penitip' => [
             'username' => $barang->penitip->username,
             'rating' => round($barang->penitip->averageRating(), 1),
+            'top_seller' => TopSeller::where('penitip_id', $barang->penitip->id)
+                ->where('bulan', $lastMonth->month)
+                ->where('tahun', $lastMonth->year)
+                ->exists(),
         ],
         'thumbnail' => url("images/barang/{$barang->id}/{$barang->id}.jpg"),
         'foto_lain' => collect($fotoLain)->map(fn($f) => url("images/barang/{$barang->id}/$f")),
@@ -117,6 +127,13 @@ Route::get('/barang-rekomendasi/{kategori_id}/{exclude_id}', function ($kategori
 //penitip
 Route::get('/penitip/{id}/profil', function ($id) {
     $penitip = \App\Models\Penitip::findOrFail($id);
+
+    $lastMonth = \Carbon\Carbon::now()->subMonth();
+    $isTopSeller = \App\Models\TopSeller::where('penitip_id', $penitip->id)
+        ->where('bulan', $lastMonth->month)
+        ->where('tahun', $lastMonth->year)
+        ->exists();
+
     return [
         'id' => $penitip->id,
         'username' => $penitip->username,
@@ -126,6 +143,7 @@ Route::get('/penitip/{id}/profil', function ($id) {
         'profile_picture' => $penitip->profile_picture
             ? asset('storage/' . $penitip->profile_picture)
             : null,
+        'top_seller' => $isTopSeller, // ✅ ini tambahan baru
     ];
 });
 
@@ -281,3 +299,37 @@ Route::get('/pembeli/transaksi/{id}', function ($id) {
         })->filter()->values(),
     ];
 });
+
+//hunter
+Route::get('/hunter/{id}/profil', function ($id) {
+    $hunter = \App\Models\Hunter::findOrFail($id);
+    return [
+        'id' => $hunter->id,
+        'username' => $hunter->username,
+        'email' => $hunter->email,
+        'no_telp' => $hunter->no_telp,
+        'saldo' => (int) $hunter->saldo,
+        'profile_picture' => $hunter->profile_picture
+            ? asset('storage/' . $hunter->profile_picture)
+            : null,
+    ];
+});
+
+Route::post('/hunter/update-fcm-token', function (Request $request) {
+    $request->validate([
+        'id' => 'required|exists:hunters,id',
+        'token' => 'required|string'
+    ]);
+
+    $hunter = Hunter::find($request->id);
+    $hunter->fcm_token = $request->token;
+    $hunter->save();
+
+    return response()->json(['message' => 'Token updated'], 200);
+});
+
+//merch
+Route::get('/merchandise', [MerchandiseApiController::class, 'index']);
+
+Route::post('/redeem-poin', [RedeemPoinApiController::class, 'store']);
+Route::get('/redeem-poin/{pembeli_id}', [RedeemPoinApiController::class, 'index']);

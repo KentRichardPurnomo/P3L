@@ -3,7 +3,18 @@
 @php 
     use Carbon\Carbon;
     use Illuminate\Support\Facades\Auth;
+    use App\Models\TopSeller;
+
     $pembeli = Auth::guard('pembeli')->user();
+    $penitip = $barang->penitip;
+    $avgRating = round($penitip->averageRating(), 1);
+
+    // Ambil bulan lalu
+    $lastMonth = Carbon::now()->subMonth();
+    $isTopSellerLastMonth = TopSeller::where('penitip_id', $penitip->id)
+        ->where('bulan', $lastMonth->month)
+        ->where('tahun', $lastMonth->year)
+        ->exists();
 @endphp
 
 
@@ -49,9 +60,22 @@
             @php
                 $penitip = $barang->penitip;
                 $avgRating = round($penitip->averageRating(), 1);
+                $lastMonth = Carbon::now()->subMonth();
+                $isTopSeller = TopSeller::where('penitip_id', $penitip->id)
+                    ->where('bulan', $lastMonth->month)
+                    ->where('tahun', $lastMonth->year)
+                    ->exists();
             @endphp
 
-            <p class="mb-2"><strong>Penitip:</strong> {{ $penitip->username }}</p>
+            <p class="mb-2">
+                <strong>Penitip:</strong> {{ $penitip->username }}
+                @if ($isTopSeller)
+                    <span class="ml-2 inline-block bg-yellow-300 text-yellow-800 text-xs font-semibold px-2 py-1 rounded-full">
+                        ⭐ Top Seller
+                    </span>
+                @endif
+            </p>
+
             <p class="mb-4">
                 <strong>Rating Penitip:</strong>
                 @if ($avgRating > 0)

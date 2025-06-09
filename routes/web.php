@@ -46,6 +46,9 @@ use Kreait\Firebase\Messaging\Notification;
 use App\Http\Controllers\Owner\OwnerTransaksiController;
 use App\Http\Controllers\Owner\LaporanPenjualanKategoriController;
 use App\Http\Controllers\Admin\AdminMerchandiseController;
+use App\Http\Controllers\ProfilHunterController;
+use App\Http\Controllers\Admin\AdminTopSellerController;
+use App\Http\Controllers\Admin\AdminPenitipController;
 
 Route::get('/test-fcm-v1/{id}', function ($id) {
     $pembeli = Pembeli::find($id);
@@ -87,9 +90,14 @@ Route::middleware(['auth:owner'])->prefix('owner')->name('owner.')->group(functi
     Route::get('/donasi/{id}/edit', [\App\Http\Controllers\Owner\DonasiController::class, 'edit'])->name('donasi.edit');
     Route::put('/donasi/{id}', [\App\Http\Controllers\Owner\DonasiController::class, 'update'])->name('donasi.update');
 
+    //laporan per kategori
     Route::get('/laporan', [LaporanPenjualanKategoriController::class, 'index'])->name('laporan.index');
     Route::get('/laporan/download', [LaporanPenjualanKategoriController::class, 'cetakPDF'])->name('laporan.download');
     Route::get('/laporan/kategori/{kategori}/download', [LaporanPenjualanKategoriController::class, 'downloadPerKategori'])->name('laporan.downloadPerKategori');
+
+    //laporan massa pentipan sudah habis
+    Route::get('/laporan/masa-penitipan', [\App\Http\Controllers\Owner\LaporanMasaPenitipanController::class, 'index'])->name('laporan.masaPenitipan');
+    Route::get('/laporan/masa-penitipan/download', [\App\Http\Controllers\Owner\LaporanMasaPenitipanController::class, 'download'])->name('laporan.masaPenitipan.download');
 
 });
 
@@ -140,69 +148,45 @@ Route::get('/cs/diskusi-belum-dibalas', [\App\Http\Controllers\CS\CSBarangContro
 
 
 //admin
-Route::prefix('admin')->middleware(['auth:pegawai', 'admin.only'])->group(function () {
-    Route::get('/organisasi', [AdminOrganisasiController::class, 'index'])->name('admin.organisasi.index');
-    Route::get('/organisasi/{username}/edit', [AdminOrganisasiController::class, 'edit'])->name('admin.organisasi.edit');
-    Route::put('/organisasi/{username}', [AdminOrganisasiController::class, 'update'])->name('admin.organisasi.update');
+Route::prefix('admin')->middleware(['auth:pegawai', 'admin.only'])->name('admin.')->group(function () {
 
-    Route::resource('/merchandise', AdminMerchandiseController::class, [
-        'as' => 'admin'
-    ]);
-});
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-Route::middleware(['auth:pegawai'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/pegawai', [\App\Http\Controllers\Admin\PegawaiController::class, 'index'])->name('pegawai.index');
-});
+    // Organisasi
+    Route::get('/organisasi', [AdminOrganisasiController::class, 'index'])->name('organisasi.index');
+    Route::get('/organisasi/{username}/edit', [AdminOrganisasiController::class, 'edit'])->name('organisasi.edit');
+    Route::put('/organisasi/{username}', [AdminOrganisasiController::class, 'update'])->name('organisasi.update');
+    Route::delete('/organisasi/{id}', [AdminOrganisasiController::class, 'destroy'])->name('organisasi.destroy');
 
+    // Pegawai
+    Route::get('/pegawai', [PegawaiController::class, 'index'])->name('pegawai.index');
+    Route::get('/pegawai/{id}/edit', [AdminJabatanController::class, 'editPegawai'])->name('pegawai.edit');
+    Route::put('/pegawai/{id}', [AdminJabatanController::class, 'updatePegawai'])->name('pegawai.update');
+    Route::delete('/pegawai/{id}', [AdminJabatanController::class, 'destroyPegawai'])->name('pegawai.destroy');
 
-Route::delete('/organisasi/{id}', [AdminOrganisasiController::class, 'destroy'])->name('admin.organisasi.destroy');
+    // Jabatan
+    Route::resource('/jabatan', AdminJabatanController::class);
 
-Route::get('/jabatan', [AdminJabatanController::class, 'index'])->name('admin.jabatan.index');
-Route::get('/jabatan/{id}/edit', [AdminJabatanController::class, 'edit'])->name('admin.jabatan.edit');
-Route::put('/jabatan/{id}', [AdminJabatanController::class, 'update'])->name('admin.jabatan.update');
-Route::delete('/jabatan/{id}', [AdminJabatanController::class, 'destroy'])->name('admin.jabatan.destroy');
-Route::get('/jabatan', [AdminJabatanController::class, 'index'])->name('admin.jabatan.index');
-Route::get('/jabatan/create', [AdminJabatanController::class, 'create'])->name('admin.jabatan.create');
-Route::post('/jabatan', [AdminJabatanController::class, 'store'])->name('admin.jabatan.store');
-Route::get('/jabatan/{id}/edit', [AdminJabatanController::class, 'edit'])->name('admin.jabatan.edit');
-Route::put('/jabatan/{id}', [AdminJabatanController::class, 'update'])->name('admin.jabatan.update');
-Route::delete('/jabatan/{id}', [AdminJabatanController::class, 'destroy'])->name('admin.jabatan.destroy');
-Route::delete('/pegawai/{id}', [AdminJabatanController::class, 'destroyPegawai'])->name('admin.pegawai.destroy');
+    // Tambahan pegawai ke jabatan tertentu
+    Route::get('/jabatan/{id}/pegawai/create', [AdminJabatanController::class, 'createPegawai'])->name('jabatan.pegawai.create');
+    Route::post('/jabatan/{id}/pegawai', [AdminJabatanController::class, 'storePegawai'])->name('jabatan.pegawai.store');
+    Route::get('/jabatan/{id}/pegawai', [AdminJabatanController::class, 'pegawai'])->name('jabatan.pegawai');
 
-Route::get('/pegawai/{id}/edit', [AdminJabatanController::class, 'editPegawai'])->name('admin.pegawai.edit');
-Route::put('/pegawai/{id}', [AdminJabatanController::class, 'updatePegawai'])->name('admin.pegawai.update');
+    // Merchandise
+    Route::resource('/merchandise', AdminMerchandiseController::class);
 
+    // Penitip
+    Route::get('/penitip', [AdminPenitipController::class, 'index'])->name('penitip.index');
 
+    // Top Seller
+    Route::post('/top-seller/set/{penitip_id}', [AdminTopSellerController::class, 'setTopSeller'])->name('top_seller.set');
+    Route::delete('/top-seller/batal', [AdminTopSellerController::class, 'batalTopSeller'])->name('top_seller.batal');
 
-// Tambah pegawai di jabatan tertentu
-Route::get('/jabatan/{id}/pegawai/create', [AdminJabatanController::class, 'createPegawai'])->name('admin.jabatan.pegawai.create');
-Route::post('/jabatan/{id}/pegawai', [AdminJabatanController::class, 'storePegawai'])->name('admin.jabatan.pegawai.store');
-
-// Tambahan: lihat pegawai berdasarkan jabatan
-Route::get('/jabatan/{id}/pegawai', [AdminJabatanController::class, 'pegawai'])->name('admin.jabatan.pegawai');
-
-Route::prefix('admin')->middleware(['auth:pegawai', 'admin.only'])->group(function () {
-    Route::get('/jabatan', [JabatanController::class, 'index'])->name('jabatan.index');
-    Route::get('/jabatan/{id}/edit', [JabatanController::class, 'edit'])->name('jabatan.edit');
-    Route::put('/jabatan/{id}', [JabatanController::class, 'update'])->name('jabatan.update');
-    Route::delete('/jabatan/{id}', [JabatanController::class, 'destroy'])->name('jabatan.destroy');
-});
-
-Route::prefix('admin')->middleware(['auth:pegawai', 'admin.only'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-    Route::resource('/jabatan', JabatanController::class);
-});
-
-Route::prefix('admin')->middleware('auth:pegawai')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
-
-    // Jabatan CRUD
-    Route::resource('/jabatan', JabatanController::class);
-});
-
-Route::middleware(['auth:pegawai'])->prefix('admin')->name('admin.')->group(function () {
+    // Hunter
     Route::get('/hunters/create', [AdminHunterController::class, 'create'])->name('hunter.create');
     Route::post('/hunters', [AdminHunterController::class, 'store'])->name('hunter.store');
+
 });
 
 //Pegawai Gudang
@@ -256,6 +240,10 @@ Route::middleware(['auth:hunter'])->group(function () {
     Route::get('/hunter/dashboard', [HunterDashboardController::class, 'index'])->name('hunter.dashboard');
 });
 
+Route::middleware('auth:hunter')->prefix('hunter')->group(function () {
+    Route::get('/profil/edit', [ProfilHunterController::class, 'edit'])->name('hunter.profil.edit');
+    Route::post('/profil/update', [ProfilHunterController::class, 'update'])->name('hunter.profil.update');
+});
 
 /*
 |--------------------------------------------------------------------------

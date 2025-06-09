@@ -11,10 +11,13 @@
         </div>
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800 mb-4 sm:mb-0">
-                📊 Laporan Penjualan per Kategori Barang
+                Laporan Penjualan per Kategori Barang
             </h2>
         </div>
-
+        <a href="{{ route('owner.laporan.download') }}"
+            class="inline-block bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm mb-4">
+            ⬇️ Unduh PDF Semua Kategori
+        </a>
         @if(count($data) > 0)
             @foreach($data as $kategori => $barangs)
                 <div class="mb-8">
