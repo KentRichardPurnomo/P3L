@@ -24,6 +24,7 @@ use App\Notifications\NotifikasiKePenitip;
 use App\Notifications\NotifikasiKeKurir;
 use App\Notifications\NotifikasiBarangSelesai;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Hunter;
 
 class BarangGudangController extends Controller
 {
@@ -60,8 +61,9 @@ class BarangGudangController extends Controller
         $jumlah = $request->jumlah;
         $kategoris = Kategori::all();
         $penitip = Penitip::findOrFail($penitip_id);
+        $hunters = Hunter::all();
 
-        return view('gudang.barang.multi_create', compact('jumlah', 'penitip', 'kategoris'));
+        return view('gudang.barang.multi_create', compact('jumlah', 'penitip', 'kategoris', 'hunters'));
     }
 
     public function multiStore(Request $request)
@@ -87,6 +89,8 @@ class BarangGudangController extends Controller
             'foto_lain.*.*' => 'image|mimes:jpg,jpeg|max:20480',
             'punya_garansi' => 'required|array',
             'garansi_berlaku_hingga' => 'nullable|array',
+            'hunter_id' => 'nullable|array',
+            'hunter_id.*' => 'nullable|exists:hunters,id',
         ], [
             'foto_lain.*.min' => 'Mohon untuk gambar lain masukkan minimal 2 gambar!'
         ]);
@@ -114,6 +118,7 @@ class BarangGudangController extends Controller
                 'batas_waktu_titip' => now()->addDays(30),
                 'thumbnail' => '',
                 'foto_lain' => json_encode([]),
+                'hunter_id' => $request->hunter_id[$i] ?? null,
             ]);
 
             $barangIds[] = $barang->id; // ← simpan ID ke array
@@ -322,8 +327,9 @@ class BarangGudangController extends Controller
         $barang = Barang::findOrFail($id);
         $kategoris = Kategori::all();
         $penitips = Penitip::all();
+        $hunters = Hunter::all();
 
-        return view('gudang.barangEdit', compact('barang', 'kategoris', 'penitips'));
+        return view('gudang.barangEdit', compact('barang', 'kategoris', 'penitips', 'hunters'));
     }
 
     public function update(Request $request, $id)
@@ -342,6 +348,7 @@ class BarangGudangController extends Controller
             'punya_garansi' => 'required|in:0,1',
             'garansi_berlaku_hingga' => 'nullable|date',
             'penitip_id' => 'required|exists:penitips,id',
+            'hunter_id' => 'nullable|exists:hunters,id',
         ]);
 
         $garansi = $request->punya_garansi == 1 ? $request->garansi_berlaku_hingga : null;
@@ -391,6 +398,7 @@ class BarangGudangController extends Controller
             'berat' => $request->berat,
             'garansi_berlaku_hingga' => $garansi,
             'penitip_id' => $request->penitip_id,
+            'hunter_id' => $request->hunter_id,
         ]);
 
         return redirect()->route('gudang.barang.barangPerPenitip', $barang->penitip_id)->with('success', 'Barang berhasil diperbarui.');

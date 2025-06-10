@@ -95,6 +95,11 @@ class Barang extends Model
     {
         return $this->hasMany(\App\Models\KomisiLog::class, 'barang_id');
     }
+
+    public function hunter()
+    {
+        return $this->belongsTo(\App\Models\Hunter::class, 'hunter_id');
+    }
     
 }
 

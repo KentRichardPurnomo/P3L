@@ -2,6 +2,12 @@
 
 @section('content')
 <div class="max-w-5xl mx-auto mt-10 bg-white p-6 rounded shadow">
+    <div class="mb-4">
+            <a href="{{ url('/owner/dashboard') }}"
+            class="inline-flex items-center text-green-600 hover:text-green-800 font-semibold">
+                ← Kembali
+            </a>
+    </div>
     <h2 class="text-2xl font-bold mb-6">📊 Laporan Penjualan Bulanan</h2>
 
     {{-- Pilihan Tahun --}}

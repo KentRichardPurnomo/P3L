@@ -118,6 +118,18 @@
             </select>
         </div>
 
+        <div class="mb-4">
+            <label class="block font-semibold">Pilih Hunter (Opsional)</label>
+            <select name="hunter_id" class="w-full border rounded px-3 py-2">
+                <option value="">-- Tidak Ada Hunter --</option>
+                @foreach ($hunters as $hunter)
+                    <option value="{{ $hunter->id }}" {{ $barang->hunter_id == $hunter->id ? 'selected' : '' }}>
+                        {{ $hunter->username }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
         {{-- Submit --}}
         <div class="text-right">
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">

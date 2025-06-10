@@ -50,6 +50,8 @@ use App\Http\Controllers\ProfilHunterController;
 use App\Http\Controllers\Admin\AdminTopSellerController;
 use App\Http\Controllers\Admin\AdminPenitipController;
 use App\Http\Controllers\Owner\LaporanPenjualanController;
+use App\Http\Controllers\Owner\LaporanKomisiController;
+use App\Http\Controllers\Owner\LaporanStokGudangController;
 
 Route::get('/test-fcm-v1/{id}', function ($id) {
     $pembeli = Pembeli::find($id);
@@ -95,9 +97,16 @@ Route::middleware(['auth:owner'])->prefix('owner')->name('owner.')->group(functi
     Route::put('/donasi/{id}', [\App\Http\Controllers\Owner\DonasiController::class, 'update'])->name('donasi.update');
 
     //laporan bulanan
-    
     Route::get('/laporan-bulanan', [LaporanPenjualanController::class, 'index'])->name('laporan.bulanan');
     Route::post('/laporan-bulanan/cetak-pdf', [LaporanPenjualanController::class, 'cetakPdf'])->name('laporan.bulanan.pdf');
+
+    //laporan komisi
+    Route::get('/laporan-komisi', [LaporanKomisiController::class, 'index'])->name('laporan.komisi');
+    Route::get('/laporan-komisi/download', [LaporanKomisiController::class, 'download'])->name('laporan.komisi.download');
+
+    //stok gudang
+    Route::get('/laporan-stok-gudang', [LaporanStokGudangController::class, 'index'])->name('laporan.stok');
+    Route::get('/laporan-stok-gudang/download', [LaporanStokGudangController::class, 'download'])->name('laporan.stok.download');
 
     //laporan per kategori
     Route::get('/laporan', [LaporanPenjualanKategoriController::class, 'index'])->name('laporan.index');
