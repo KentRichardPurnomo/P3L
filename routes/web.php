@@ -49,6 +49,10 @@ use App\Http\Controllers\Admin\AdminMerchandiseController;
 use App\Http\Controllers\ProfilHunterController;
 use App\Http\Controllers\Admin\AdminTopSellerController;
 use App\Http\Controllers\Admin\AdminPenitipController;
+use App\Http\Controllers\Owner\LaporanPenjualanController;
+use App\Http\Controllers\Owner\LaporanKomisiController;
+use App\Http\Controllers\Owner\LaporanStokGudangController;
+use App\Http\Controllers\KomisiController;
 
 Route::get('/test-fcm-v1/{id}', function ($id) {
     $pembeli = Pembeli::find($id);
@@ -73,6 +77,9 @@ Route::get('/test-fcm-v1/{id}', function ($id) {
     }
 });
 
+//cek batas waktu barang
+Route::patch('/barang/{id}/donasikan', [BarangDonasiController::class, 'donasikan'])->name('barang.donasikan');
+
 Route::get('/login', [LoginUniversalController::class, 'showLoginForm'])->name('login.universal');
 Route::post('/login', [LoginUniversalController::class, 'login'])->name('login.universal.submit');
 
@@ -89,6 +96,18 @@ Route::middleware(['auth:owner'])->prefix('owner')->name('owner.')->group(functi
 
     Route::get('/donasi/{id}/edit', [\App\Http\Controllers\Owner\DonasiController::class, 'edit'])->name('donasi.edit');
     Route::put('/donasi/{id}', [\App\Http\Controllers\Owner\DonasiController::class, 'update'])->name('donasi.update');
+
+    //laporan bulanan
+    Route::get('/laporan-bulanan', [LaporanPenjualanController::class, 'index'])->name('laporan.bulanan');
+    Route::post('/laporan-bulanan/cetak-pdf', [LaporanPenjualanController::class, 'cetakPdf'])->name('laporan.bulanan.pdf');
+
+    //laporan komisi
+    Route::get('/laporan-komisi', [LaporanKomisiController::class, 'index'])->name('laporan.komisi');
+    Route::get('/laporan-komisi/download', [LaporanKomisiController::class, 'download'])->name('laporan.komisi.download');
+
+    //stok gudang
+    Route::get('/laporan-stok-gudang', [LaporanStokGudangController::class, 'index'])->name('laporan.stok');
+    Route::get('/laporan-stok-gudang/download', [LaporanStokGudangController::class, 'download'])->name('laporan.stok.download');
 
     //laporan per kategori
     Route::get('/laporan', [LaporanPenjualanKategoriController::class, 'index'])->name('laporan.index');
@@ -133,6 +152,10 @@ Route::prefix('cs')->middleware('auth:pegawai')->group(function () {
 
     Route::post('/barang-diproses/{id}/selesaikan', [\App\Http\Controllers\CS\CSProsesBarangController::class, 'selesaikan'])
         ->name('cs.barang.diproses.selesaikan');
+
+
+    Route::get('/cs/merchandise', [App\Http\Controllers\CS\MerchandiseController::class, 'index'])->name('cs.merchandise.index');
+    Route::post('/cs/merchandise/update-status/{id}', [App\Http\Controllers\CS\MerchandiseController::class, 'updateStatus'])->name('cs.merchandise.update');
 });
 Route::post('/penitip', [CSPenitipController::class, 'store'])->name('cs.penitip.store');
 Route::get('/barang/create', [CSBarangController::class, 'create'])->name('cs.barang.create');
@@ -182,6 +205,10 @@ Route::prefix('admin')->middleware(['auth:pegawai', 'admin.only'])->name('admin.
     // Top Seller
     Route::post('/top-seller/set/{penitip_id}', [AdminTopSellerController::class, 'setTopSeller'])->name('top_seller.set');
     Route::delete('/top-seller/batal', [AdminTopSellerController::class, 'batalTopSeller'])->name('top_seller.batal');
+
+    // bonus top seller
+    Route::post('/admin/top-seller/berikan-bonus', [TopSellerController::class, 'berikanBonus'])->name('admin.top_seller.bonus')->middleware('auth:pegawai');
+
 
     // Hunter
     Route::get('/hunters/create', [AdminHunterController::class, 'create'])->name('hunter.create');
@@ -243,6 +270,7 @@ Route::middleware(['auth:hunter'])->group(function () {
 Route::middleware('auth:hunter')->prefix('hunter')->group(function () {
     Route::get('/profil/edit', [ProfilHunterController::class, 'edit'])->name('hunter.profil.edit');
     Route::post('/profil/update', [ProfilHunterController::class, 'update'])->name('hunter.profil.update');
+    Route::get('/hunter/komisi', [KomisiController::class, 'index'])->name('hunter.index');
 });
 
 /*

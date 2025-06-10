@@ -13,7 +13,7 @@ class AlokasiController extends Controller
 {
     public function form(RequestDonasi $requestDonasi)
     {
-        $barangs = Barang::where('status', 'donasi')->get();
+        $barangs = Barang::where('status', 'barang untuk donasi')->get();
         return view('owner.alokasi', compact('requestDonasi', 'barangs'));
     }
 
@@ -26,32 +26,29 @@ class AlokasiController extends Controller
 
         $barang = Barang::findOrFail($request->barang_id);
 
-        // Simpan ke donasi_barangs
         DonasiBarang::create([
-            'organisasi_id' => $requestDonasi->organisasi_id,
-            'nama_penerima'   => $request->nama_penerima,
-            'nama_barang'   => $barang->nama,
-            'kategori_id'   => $barang->kategori_id,
-            'deskripsi'     => $barang->deskripsi,
-            'tanggal_donasi'=> now(),
+            'organisasi_id'  => $requestDonasi->organisasi_id,
+            'barang_id'      => $barang->id,
+            'nama_penerima'  => $request->nama_penerima,
+            'nama_barang'    => $barang->nama,
+            'kategori_id'    => $barang->kategori_id,
+            'deskripsi'      => $barang->deskripsi,
+            'tanggal_donasi' => now(),
         ]);
 
-        // Ubah status barang
         $barang->status = 'didonasikan';
         $barang->save();
-
-        // Hapus request donasi
         $requestDonasi->delete();
 
-        // ✅ Tambah poin untuk penitip jika ada
-        if ($barang->penitip_id) {
+        if ($barang->penitip_id && $barang->harga) {
             $penitip = \App\Models\Penitip::find($barang->penitip_id);
-            if ($penitip && $barang->harga) {
-                $tambahanPoin = floor($barang->harga / 10000);
-                $penitip->increment('poin', $tambahanPoin);
+            if ($penitip) {
+                $poin = floor($barang->harga / 10000);
+                $penitip->increment('poin', $poin);
             }
         }
 
         return redirect()->route('owner.histori')->with('success', 'Barang berhasil dialokasikan dan poin penitip ditambahkan!');
     }
+
 }

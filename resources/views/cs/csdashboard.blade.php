@@ -39,6 +39,11 @@
             class="block bg-purple-600 text-white px-4 py-3 rounded hover:bg-purple-700 text-center font-semibold">
             🚚 Barang Sedang Diproses
         </a>
+
+        <a href="{{ route('cs.merchandise.index') }}"
+            class="block bg-yellow-500 text-white px-4 py-3 rounded hover:bg-yellow-600 text-center font-semibold">
+            📦 Kelola Klaim Merchandise
+        </a>
     </div>
 </div>
 @endsection

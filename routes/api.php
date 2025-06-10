@@ -13,6 +13,7 @@ use Illuminate\Support\Carbon;
 use App\Models\TopSeller;
 use App\Http\Controllers\Api\MerchandiseApiController;
 use App\Http\Controllers\Api\RedeemPoinApiController;
+use App\Http\Controllers\Api\HunterApiController;
 
 // Login API
 Route::post('/login', [LoginApiController::class, 'login']);
@@ -327,6 +328,9 @@ Route::post('/hunter/update-fcm-token', function (Request $request) {
 
     return response()->json(['message' => 'Token updated'], 200);
 });
+
+// Komisi history
+Route::get('/hunter/{id}/komisi-history', [HunterApiController::class, 'komisiHistory']);
 
 //merch
 Route::get('/merchandise', [MerchandiseApiController::class, 'index']);

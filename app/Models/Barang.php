@@ -28,6 +28,7 @@ class Barang extends Model
         'tanggal_diambil_kembali',
         'transaksi_id',
         'penitip_id',
+        'hunter_id',
     ];
 
     protected $casts = [
@@ -94,6 +95,11 @@ class Barang extends Model
     public function komisiLogs()
     {
         return $this->hasMany(\App\Models\KomisiLog::class, 'barang_id');
+    }
+
+    public function hunter()
+    {
+        return $this->belongsTo(\App\Models\Hunter::class, 'hunter_id');
     }
     
 }

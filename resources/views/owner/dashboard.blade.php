@@ -32,14 +32,31 @@
             💰 Lihat Transaksi ReuseMart
         </a>
 
+        <a href="{{ route('owner.laporan.bulanan') }}"
+            class="block w-full text-center bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
+            📊 Laporan Penjualan Bulanan
+        </a>
+
+        <a href="{{ route('owner.laporan.komisi') }}"
+            class="block w-full text-center bg-indigo-600 text-white py-2 rounded hover:bg-red-700">
+            📑 Laporan Komisi Bulanan
+        </a>
+
+        <a href="{{ route('owner.laporan.stok') }}"
+            class="block w-full text-center bg-purple-600 text-white py-2 rounded hover:bg-purple-700">
+            🧾 Laporan Stok Gudang
+        </a>
+
         <a href="{{ route('owner.laporan.index') }}"
             class="block w-full text-center bg-red-600 text-white py-2 rounded hover:bg-yellow-700">
             📑 Laporan Penjualan per Kategori Barang
         </a>
+
         <a href="{{ route('owner.laporan.masaPenitipan') }}"
             class="block w-full text-center bg-red-600 text-white py-2 rounded hover:bg-red-700">
             📑 Laporan Barang Masa Penitipannya Sudah Habis
         </a>
+
     </div>
 
 </div>

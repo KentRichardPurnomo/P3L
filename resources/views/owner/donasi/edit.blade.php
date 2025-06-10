@@ -39,7 +39,6 @@
             <label for="status_barang" class="block font-medium">Status Barang</label>
             <select name="status_barang" class="w-full border rounded px-3 py-2">
                 <option value="didonasikan" {{ $barang?->status == 'didonasikan' ? 'selected' : '' }}>Didonasikan</option>
-                <option value="didonasikan" {{ $barang?->status == 'didonasikan' ? 'selected' : '' }}>donasi</option>
                 <option value="selesai" {{ $barang?->status == 'selesai' ? 'selected' : '' }}>Selesai</option>
                 <option value="dibatalkan" {{ $barang?->status == 'dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
             </select>

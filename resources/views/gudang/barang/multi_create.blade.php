@@ -62,6 +62,16 @@
                 </div>
 
                 <div>
+                    <label class="block font-semibold">Pilih Hunter (Opsional)</label>
+                    <select name="hunter_id[]" class="w-full border rounded px-3 py-2">
+                        <option value="">-- Tidak Ada Hunter --</option>
+                        @foreach ($hunters as $hunter)
+                            <option value="{{ $hunter->id }}">{{ $hunter->username }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
                     <label class="block font-semibold">Thumbnail (.jpg)</label>
                     <input type="file" name="thumbnail[]" accept="image/jpeg" required class="w-full">
                 </div>

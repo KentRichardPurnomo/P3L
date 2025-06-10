@@ -16,11 +16,15 @@
         </div>
     </div>
 
-    {{-- Tombol Edit --}}
+    {{-- Tombol Edit dan Histori --}}
     <div class="mt-3">
         <a href="{{ route('hunter.profil.edit') }}"
         class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
-        Edit Profil
+            Edit Profil
+        </a>
+        <a href="{{ route('hunter.index') }}"
+        class="inline-block bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm mt-2">
+            💰 Lihat History Komisi
         </a>
     </div>
 </div>
