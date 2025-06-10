@@ -11,10 +11,10 @@ use App\Models\Barang;
 class DonasiController extends Controller
 {
     public function edit($id)
-    {
-        $donasi = DonasiBarang::with('organisasi')->findOrFail($id);
+    {   
+        $donasi = DonasiBarang::with(['organisasi', 'barang'])->findOrFail($id);
         $organisasis = Organisasi::all();
-        $barang = Barang::where('nama', $donasi->nama_barang)->first(); // asumsi nama barang sama
+        $barang = $donasi->barang;
 
         return view('owner.donasi.edit', compact('donasi', 'organisasis', 'barang'));
     }
@@ -35,9 +35,9 @@ class DonasiController extends Controller
             'tanggal_donasi' => $request->tanggal_donasi,
         ]);
 
-        if ($barang) {
-            $barang->status = $request->status_barang;
-            $barang->save();
+        if ($donasi->barang) {
+            $donasi->barang->status = $request->status_barang;
+            $donasi->barang->save();
         }
 
         return redirect()->route('owner.histori')->with('success', 'Donasi berhasil diperbarui!');

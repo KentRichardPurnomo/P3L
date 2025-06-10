@@ -56,6 +56,7 @@ class AdminTopSellerController extends Controller
             return back()->with('error', 'Top seller bulan lalu sudah dipilih.');
         }
 
+        // Simpan top seller ke tabel
         TopSeller::create([
             'penitip_id' => $penitip_id,
             'bulan' => $bulan,
@@ -63,7 +64,35 @@ class AdminTopSellerController extends Controller
             'dibuat_oleh' => Auth::guard('pegawai')->id(),
         ]);
 
-        return back()->with('success', 'Top seller bulan lalu berhasil ditetapkan.');
+        // Hitung total penjualan barang penitip bulan lalu
+        $totalPenjualan = \App\Models\Transaksi::where('status', 'selesai')
+            ->whereMonth('tanggal', $bulan)
+            ->whereYear('tanggal', $tahun)
+            ->with('detail.barang')
+            ->get()
+            ->flatMap(function ($transaksi) {
+                return $transaksi->detail;
+            })
+            ->filter(function ($detail) use ($penitip_id) {
+                return $detail->barang && $detail->barang->penitip_id == $penitip_id;
+            })
+            ->sum('subtotal');
+
+        // Hitung bonus 1%
+        $bonus = round($totalPenjualan * 0.01, 2);
+
+        // Tambahkan ke saldo penitip
+        \App\Models\Penitip::where('id', $penitip_id)->increment('saldo', $bonus);
+
+        \App\Models\BonusTopSellerLog::create([
+            'penitip_id' => $penitip_id,
+            'bulan' => $bulan,
+            'tahun' => $tahun,
+            'jumlah_bonus' => $bonus,
+            'dibuat_oleh' => Auth::guard('pegawai')->id(), // langsung, TANPA variabel
+        ]);
+
+        return back()->with('success', 'Top seller bulan lalu berhasil ditetapkan. Bonus sebesar Rp' . number_format($bonus, 0, ',', '.') . ' telah diberikan.');
     }
 
     public function batalTopSeller()

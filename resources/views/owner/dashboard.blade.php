@@ -32,6 +32,11 @@
             💰 Lihat Transaksi ReuseMart
         </a>
 
+        <a href="{{ route('owner.laporan.bulanan') }}"
+            class="block w-full text-center bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
+            📊 Laporan Penjualan Bulanan
+        </a>
+
         <a href="{{ route('owner.laporan.index') }}"
             class="block w-full text-center bg-red-600 text-white py-2 rounded hover:bg-yellow-700">
             📑 Laporan Penjualan per Kategori Barang

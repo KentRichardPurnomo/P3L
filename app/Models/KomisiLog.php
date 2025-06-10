@@ -9,8 +9,8 @@ class KomisiLog extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'transaksi_id', 'barang_id', 'penitip_id',
-        'total_harga', 'komisi_owner', 'komisi_penitip', 'bonus_penitip'
+        'transaksi_id', 'barang_id', 'penitip_id','hunter_id',
+        'total_harga', 'komisi_owner', 'komisi_penitip', 'bonus_penitip','komisi_hunter',
     ];
 
     public function barang()
@@ -22,5 +22,9 @@ class KomisiLog extends Model
     {
         return $this->belongsTo(\App\Models\Penitip::class);
     }
-
+    
+    public function hunter()
+    {
+        return $this->belongsTo(\App\Models\Hunter::class);
+    }
 }

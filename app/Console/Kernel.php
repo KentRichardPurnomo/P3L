@@ -19,6 +19,7 @@ class Kernel extends ConsoleKernel
         // $schedule->command('notifikasi:kirim-titip')->dailyAt('08:28');
         $schedule->command('notifikasi:kirim-titip')->everyMinute(); //buat testing doang
         $schedule->command('transaksi:cek-hangus')->everyMinute();
+        $schedule->command('barang:cek-titip-donasi')->dailyAt('07:00');
     }
 
     protected $commands = [

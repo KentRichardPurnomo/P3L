@@ -6,7 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.0.2",
-        "barryvdh/laravel-dompdf": "^2.2",
+        "barryvdh/laravel-dompdf": "*",
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^0.6.3",
         "kreait/firebase-php": "6.9",

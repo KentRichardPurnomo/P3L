@@ -22,4 +22,9 @@ class DonasiBarang extends Model
     {
         return $this->belongsTo(Kategori::class, 'kategori_id');
     }
+
+    public function barang()
+    {
+        return $this->belongsTo(Barang::class);
     }
+}
